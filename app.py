@@ -16,7 +16,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
+
 DATABASE = os.path.join(app.root_path, "database", "school.db")
+
+if os.environ.get("RENDER"):
+    DATABASE = "/var/data/school.db"
+
 
 
 def get_db():
