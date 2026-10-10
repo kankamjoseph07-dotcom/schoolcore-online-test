@@ -1,0 +1,527 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>School Expenses | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .expenses-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .expenses-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .expenses-header h1 {
+            margin: 0 0 8px;
+            color: #0f172a;
+        }
+
+        .expenses-header p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .expenses-button {
+            display: inline-block;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .expenses-button:hover {
+            background: #1d4ed8;
+        }
+
+        .expenses-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .expenses-card {
+            padding: 24px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+        }
+
+        .expenses-card span {
+            display: block;
+            margin-bottom: 12px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .expenses-card strong {
+            color: #0f172a;
+            font-size: 27px;
+        }
+
+        .expenses-panel {
+            margin-bottom: 25px;
+            padding: 25px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .expenses-panel h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #0f172a;
+            font-size: 19px;
+        }
+
+        .expenses-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 17px;
+        }
+
+        .expenses-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .expenses-field label {
+            color: #334155;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .expenses-field input,
+        .expenses-field select,
+        .expenses-field textarea {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: white;
+            color: #0f172a;
+            font: inherit;
+        }
+
+        .expenses-field textarea {
+            min-height: 85px;
+            resize: vertical;
+        }
+
+        .expenses-field.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .expenses-form .expenses-submit {
+            align-self: end;
+            justify-self: start;
+        }
+
+        .expenses-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .expenses-table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        .expenses-table th,
+        .expenses-table td {
+            padding: 15px 13px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .expenses-table th {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .expenses-table td {
+            color: #334155;
+        }
+
+        .expenses-empty {
+            padding: 30px;
+            text-align: center !important;
+            color: #64748b;
+        }
+
+        .expense-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+            align-items: center;
+        }
+
+        .expense-filters input,
+        .expense-filters select {
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 0;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: white;
+            font: inherit;
+        }
+
+        .expense-filters a {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .expense-action {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 2px;
+        }
+
+        .expense-edit {
+            background: #2563eb;
+        }
+
+        .expense-delete {
+            padding: 8px 12px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 13px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .expense-actions {
+            white-space: nowrap;
+        }
+
+        .expense-delete-form {
+            display: inline-block;
+            margin: 0;
+        }
+
+        @media (max-width: 600px) {
+            .expenses-page {
+                padding: 15px;
+            }
+
+            .expenses-panel {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="expenses-page">
+
+    <header class="expenses-header">
+        <div>
+            <h1>School Expenses</h1>
+            <p>Record and monitor your school's expenditure.</p>
+        </div>
+
+        <a class="expenses-button" href="{{ url_for('dashboard') }}">
+            Back to Dashboard
+        </a>
+    </header>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div style="padding:12px; margin-bottom:12px; border-radius:7px;
+                            background:#eff6ff; color:#1e40af;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Expense summary -->
+    <section class="expenses-summary">
+
+        <div class="expenses-card">
+            <span>Total Recorded Expenses</span>
+            <strong>GH₵ {{ "%.2f"|format(total_expenses|float) }}</strong>
+        </div>
+
+        <div class="expenses-card">
+            <span>Number of Expense Records</span>
+            <strong>{{ expenses|length }}</strong>
+        </div>
+
+    </section>
+
+    <!-- Add expense form -->
+    <section class="expenses-panel">
+
+        <h2>Record a New Expense</h2>
+
+        <form class="expenses-form"
+              method="POST"
+              action="{{ url_for('save_school_expense') }}">
+
+            <div class="expenses-field">
+                <label for="expense_name">Expense Name *</label>
+                <input type="text"
+                       id="expense_name"
+                       name="expense_name"
+                       placeholder="e.g. Electricity bill"
+                       maxlength="150"
+                       required>
+            </div>
+
+            <div class="expenses-field">
+                <label for="category">Category *</label>
+                <select id="category" name="category" required>
+                    <option value="">Select category</option>
+                    <option value="Utilities">Utilities</option>
+                    <option value="Salaries">Salaries</option>
+                    <option value="Stationery">Stationery</option>
+                    <option value="Maintenance">Maintenance and Repairs</option>
+                    <option value="Teaching Materials">Teaching Materials</option>
+                    <option value="Transportation">Transportation</option>
+                    <option value="Food">Food and Catering</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="expenses-field">
+                <label for="amount">Amount (GH₵) *</label>
+                <input type="number"
+                       id="amount"
+                       name="amount"
+                       min="0.01"
+                       step="0.01"
+                       placeholder="0.00"
+                       required>
+            </div>
+
+            <div class="expenses-field">
+                <label for="expense_date">Expense Date *</label>
+                <input type="date"
+                       id="expense_date"
+                       name="expense_date"
+                       required>
+            </div>
+
+            <div class="expenses-field">
+                <label for="payment_method">Payment Method *</label>
+                <select id="payment_method"
+                        name="payment_method"
+                        required>
+                    <option value="Cash">Cash</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Mobile Money">Mobile Money</option>
+                    <option value="Cheque">Cheque</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="expenses-field">
+                <label for="reference">Payment Reference</label>
+                <input type="text"
+                       id="reference"
+                       name="reference"
+                       maxlength="100"
+                       placeholder="Optional reference number">
+            </div>
+
+            <div class="expenses-field full-width">
+                <label for="notes">Notes</label>
+                <textarea id="notes"
+                          name="notes"
+                          maxlength="500"
+                          placeholder="Additional details about this expense"></textarea>
+            </div>
+
+            <button class="expenses-button expenses-submit" type="submit">
+                Save Expense
+            </button>
+
+        </form>
+
+    </section>
+
+    <!-- Expense records -->
+    <section class="expenses-panel">
+
+        <h2>Expense Records</h2>
+
+        <!-- Search and filter -->
+        <form method="GET"
+              action="{{ url_for('school_expenses') }}"
+              class="expense-filters">
+
+            <input type="text"
+                   name="search"
+                   placeholder="Search expense or reference..."
+                   value="{{ request.args.get('search', '') }}">
+
+            <select name="category">
+                <option value="">All Categories</option>
+
+                {% for item in [
+                    'Utilities', 'Salaries', 'Stationery', 'Maintenance',
+                    'Teaching Materials', 'Transportation', 'Food', 'Other'
+                ] %}
+                    <option value="{{ item }}"
+                        {% if request.args.get('category', '') == item %}selected{% endif %}>
+                        {{ item }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="payment_method">
+                <option value="">All Payment Methods</option>
+
+                {% for item in [
+                    'Cash', 'Bank Transfer', 'Mobile Money', 'Cheque', 'Other'
+                ] %}
+                    <option value="{{ item }}"
+                        {% if request.args.get('payment_method', '') == item %}selected{% endif %}>
+                        {{ item }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <input type="date"
+                   name="start_date"
+                   aria-label="Start date"
+                   value="{{ request.args.get('start_date', '') }}">
+
+            <input type="date"
+                   name="end_date"
+                   aria-label="End date"
+                   value="{{ request.args.get('end_date', '') }}">
+
+            <button type="submit" class="expenses-button">
+                Search
+            </button>
+
+            <a href="{{ url_for('school_expenses') }}">
+                Clear Filters
+            </a>
+
+        </form>
+
+        <!-- Table with Edit and Delete actions -->
+        <div class="expenses-table-wrapper">
+
+            <table class="expenses-table">
+
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Expense Name</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Reference</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for expense in expenses %}
+
+                    <tr>
+                        <td>{{ expense.id }}</td>
+                        <td>{{ expense.expense_date }}</td>
+                        <td>{{ expense.expense_name }}</td>
+                        <td>{{ expense.category }}</td>
+
+                        <td>
+                            GH₵ {{ "%.2f"|format(expense.amount|float) }}
+                        </td>
+
+                        <td>{{ expense.payment_method }}</td>
+                        <td>{{ expense.reference or "—" }}</td>
+                        <td>{{ expense.notes or "—" }}</td>
+
+                        <!-- These buttons belong inside each expense row -->
+                        <td class="expense-actions">
+
+                            <a class="expense-action expense-edit"
+                               href="{{ url_for('edit_school_expense', expense_id=expense.id) }}">
+                                Edit
+                            </a>
+
+                            <form class="expense-delete-form"
+                                  method="POST"
+                                  action="{{ url_for('delete_school_expense', expense_id=expense.id) }}"
+                                  onsubmit="return confirm('Are you sure you want to delete this expense?');">
+
+                                <button class="expense-delete" type="submit">
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="9" class="expenses-empty">
+                            No expenses found. Record a new expense or clear
+                            your filters.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</div>
+
+</body>
+</html>
+

@@ -1,0 +1,433 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Dashboard | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .finance-dashboard {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .finance-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .finance-heading h1 {
+            margin: 0 0 8px;
+        }
+
+        .finance-heading p {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .finance-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .finance-actions a,
+        .finance-actions button {
+            display: inline-block;
+            padding: 10px 15px;
+            border: 0;
+            border-radius: 7px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .finance-primary {
+            background: #163b65;
+            color: white;
+        }
+
+        .finance-secondary {
+            background: #e8eef5;
+            color: #163b65;
+        }
+
+        .finance-cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .finance-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+        }
+
+        .finance-card p {
+            color: #64748b;
+            margin: 0 0 12px;
+        }
+
+        .finance-card h2 {
+            font-size: 25px;
+            margin: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .finance-income {
+            border-top: 4px solid #16805d;
+        }
+
+        .finance-expenses {
+            border-top: 4px solid #d97706;
+        }
+
+        .finance-balance {
+            border-top: 4px solid #2563eb;
+        }
+
+        .finance-payments {
+            border-top: 4px solid #7c3aed;
+        }
+
+        .finance-panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 25px;
+            min-width: 0;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+        }
+
+        .finance-panel h2 {
+            margin-top: 0;
+            font-size: 19px;
+        }
+
+        .finance-chart {
+            position: relative;
+            height: 340px;
+        }
+
+        .finance-table-wrap {
+            overflow-x: auto;
+        }
+
+        .finance-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 620px;
+        }
+
+        .finance-table th,
+        .finance-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .finance-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .finance-table td {
+            font-size: 14px;
+        }
+
+        .finance-empty {
+            text-align: center;
+            color: #64748b;
+            padding: 25px !important;
+        }
+
+        .finance-recent-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+
+        .finance-positive {
+            color: #16805d;
+        }
+
+        .finance-negative {
+            color: #c2410c;
+        }
+
+        @media (max-width: 1000px) {
+            .finance-cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .finance-recent-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .finance-dashboard {
+                padding: 12px;
+                margin: 15px auto;
+            }
+
+            .finance-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .finance-card h2 {
+                font-size: 23px;
+            }
+
+            .finance-chart {
+                height: 280px;
+            }
+        }
+
+        @media print {
+            .finance-actions,
+            .no-print {
+                display: none !important;
+            }
+
+            .finance-dashboard {
+                max-width: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .finance-card,
+            .finance-panel {
+                box-shadow: none;
+                break-inside: avoid;
+            }
+
+            body {
+                background: white !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="finance-dashboard">
+
+        <header class="finance-heading">
+            <div>
+                <h1>Financial Dashboard</h1>
+                <p>Monthly financial overview for {{ current_month }}</p>
+            </div>
+
+            <div class="finance-actions">
+                <a class="finance-secondary"
+                   href="{{ url_for('financial_reports') }}">
+                    Financial Reports
+                </a>
+
+                <a class="finance-secondary"
+                   href="{{ url_for('school_expenses') }}">
+                    School Expenses
+                </a>
+
+                <a class="finance-primary"
+                   href="{{ url_for('school_fees') }}">
+                    School Fees
+                </a>
+
+                <button class="finance-primary"
+                        type="button"
+                        onclick="window.print()">
+                    Print Dashboard
+                </button>
+            </div>
+        </header>
+
+        <section class="finance-cards">
+
+            <article class="finance-card finance-income">
+                <p>Income This Month</p>
+                <h2>GHS {{ "%.2f"|format(monthly_income) }}</h2>
+            </article>
+
+            <article class="finance-card finance-expenses">
+                <p>Expenses This Month</p>
+                <h2>GHS {{ "%.2f"|format(monthly_expenses) }}</h2>
+            </article>
+
+            <article class="finance-card finance-balance">
+                <p>Net Balance This Month</p>
+                <h2 class="{{ 'finance-positive' if monthly_balance >= 0 else 'finance-negative' }}">
+                    GHS {{ "%.2f"|format(monthly_balance) }}
+                </h2>
+            </article>
+
+            <article class="finance-card finance-payments">
+                <p>Payments Received This Month</p>
+                <h2>{{ payment_count }}</h2>
+            </article>
+
+        </section>
+
+        <section class="finance-panel">
+            <h2>Monthly Income vs. Expenses</h2>
+            <p>Comparison of the last six months.</p>
+
+            <div class="finance-chart">
+                <canvas id="financialChart"></canvas>
+            </div>
+        </section>
+
+        <section class="finance-recent-grid">
+
+            <div class="finance-panel">
+                <h2>Recent Fee Payments</h2>
+
+                <div class="finance-table-wrap">
+                    <table class="finance-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Student</th>
+                                <th>Fee</th>
+                                <th>Amount (GHS)</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for payment in recent_payments %}
+                            <tr>
+                                <td>{{ payment["payment_date"] }}</td>
+                                <td>
+                                    {{ payment["first_name"] }}
+                                    {{ payment["last_name"] }}
+                                </td>
+                                <td>{{ payment["fee_name"] }}</td>
+                                <td>{{ "%.2f"|format(payment["amount_paid"]) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="finance-empty">
+                                    No fee payments recorded yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="finance-panel">
+                <h2>Recent Expenses</h2>
+
+                <div class="finance-table-wrap">
+                    <table class="finance-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Expense</th>
+                                <th>Category</th>
+                                <th>Amount (GHS)</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for expense in recent_expenses %}
+                            <tr>
+                                <td>{{ expense["expense_date"] }}</td>
+                                <td>{{ expense["expense_name"] }}</td>
+                                <td>{{ expense["category"] }}</td>
+                                <td>{{ "%.2f"|format(expense["amount"]) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="finance-empty">
+                                    No expenses recorded yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        const chartLabels = JSON.parse('{{ chart_labels | tojson | safe }}');
+        const incomeData = JSON.parse('{{ chart_income | tojson | safe }}');
+        const expenseData = JSON.parse('{{ chart_expenses | tojson | safe }}');
+
+        const chartCanvas = document.getElementById("financialChart");
+
+        if (chartCanvas && typeof Chart !== "undefined") {
+            new Chart(chartCanvas, {
+                type: "bar",
+
+                data: {
+                    labels: chartLabels,
+
+                    datasets: [
+                        {
+                            label: "Income (GHS)",
+                            data: incomeData,
+                            backgroundColor: "#2475B8",
+                            borderRadius: 5
+                        },
+                        {
+                            label: "Expenses (GHS)",
+                            data: expenseData,
+                            backgroundColor: "#E7A34B",
+                            borderRadius: 5
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        intersect: false,
+                        mode: "index"
+                    },
+
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: "Amount (GHS)"
+                            }
+                        }
+                    },
+
+                    plugins: {
+                        legend: {
+                            position: "top"
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examination Results | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .results-page {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 24px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .results-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .results-panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .results-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 18px;
+            align-items: end;
+        }
+
+        .results-filters label,
+        .score-field label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .results-filters select,
+        .results-filters input,
+        .score-field input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px;
+            border: 1px solid #d5dce5;
+            border-radius: 7px;
+            background: #fff;
+        }
+
+        .results-btn {
+            display: inline-block;
+            padding: 11px 18px;
+            border: none;
+            border-radius: 7px;
+            background: #2457d6;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .results-btn:hover {
+            opacity: 0.9;
+        }
+
+        .results-btn.secondary {
+            background: #526174;
+        }
+
+        .results-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 780px;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 13px;
+            border-bottom: 1px solid #e7ebf0;
+            text-align: left;
+        }
+
+        .results-table th {
+            background: #f4f7fb;
+        }
+
+        .results-table input {
+            width: 95px;
+            max-width: 100%;
+            padding: 9px;
+            border: 1px solid #d5dce5;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .results-message {
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border-radius: 7px;
+            background: #f0f4f9;
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .results-note {
+            color: #657186;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        @media print {
+            .no-print,
+            .results-filters,
+            .results-actions,
+            nav,
+            aside {
+                display: none !important;
+            }
+
+            .results-page {
+                margin: 0;
+                padding: 0;
+            }
+
+            .results-panel {
+                box-shadow: none;
+                padding: 8px;
+            }
+
+            body {
+                background: white !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="results-page">
+
+    <header class="results-header">
+        <div>
+            <h1>Examination Results</h1>
+            <p>Enter, calculate and manage student examination scores.</p>
+        </div>
+
+        <div class="no-print">
+            <a href="{{ url_for('dashboard') }}"
+               class="results-btn secondary">
+                Back to Dashboard
+            </a>
+        </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="results-message">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="results-panel">
+        <h2>Select Examination Details</h2>
+
+        <form method="GET"
+              action="{{ url_for('results') }}"
+              class="results-filters">
+
+            <div>
+                <label for="class_name">Class</label>
+                <select id="class_name"
+                        name="class_name"
+                        required>
+                    <option value="">Select class</option>
+
+                    {% for school_class in classes %}
+                        <option value="{{ school_class['class_name'] }}"
+                            {% if selected_class == school_class['class_name'] %}
+                                selected
+                            {% endif %}>
+                            {{ school_class['class_name'] }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="subject_id">Subject</label>
+                <select id="subject_id"
+                        name="subject_id"
+                        required>
+                    <option value="">Select subject</option>
+
+                    {% for subject in subjects %}
+                        <option value="{{ subject['id'] }}"
+                            {% if selected_subject|string == subject['id']|string %}
+                                selected
+                            {% endif %}>
+                            {{ subject['subject_name'] }}
+                            {% if subject['subject_code'] %}
+                                ({{ subject['subject_code'] }})
+                            {% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="term">Term</label>
+                <select id="term" name="term" required>
+                    <option value="First Term"
+                        {% if term == 'First Term' %}selected{% endif %}>
+                        First Term
+                    </option>
+                    <option value="Second Term"
+                        {% if term == 'Second Term' %}selected{% endif %}>
+                        Second Term
+                    </option>
+                    <option value="Third Term"
+                        {% if term == 'Third Term' %}selected{% endif %}>
+                        Third Term
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label for="academic_year">Academic Year</label>
+                <input type="text"
+                       id="academic_year"
+                       name="academic_year"
+                       value="{{ academic_year }}"
+                       placeholder="2026/2027"
+                       pattern="[0-9]{4}/[0-9]{4}"
+                       title="Use the format 2026/2027"
+                       required>
+            </div>
+
+            <div>
+                <button type="submit" class="results-btn">
+                    Load Students
+                </button>
+            </div>
+
+        </form>
+
+        <p class="results-note">
+            Class score: maximum 30. Examination score: maximum 70.
+            Total score: maximum 100.
+        </p>
+    </section>
+
+    {% if selected_class and selected_subject %}
+        <section class="results-panel">
+
+            <h2>{{ selected_class }} — Student Scores</h2>
+
+            <p>
+                <strong>Term:</strong> {{ term }}
+                &nbsp; | &nbsp;
+                <strong>Academic Year:</strong> {{ academic_year }}
+            </p>
+
+            {% if students %}
+
+                <form method="POST"
+                      action="{{ url_for('save_results') }}"
+                      id="resultsForm">
+
+                    <input type="hidden"
+                           name="class_name"
+                           value="{{ selected_class }}">
+
+                    <input type="hidden"
+                           name="subject_id"
+                           value="{{ selected_subject }}">
+
+                    <input type="hidden"
+                           name="term"
+                           value="{{ term }}">
+
+                    <input type="hidden"
+                           name="academic_year"
+                           value="{{ academic_year }}">
+
+                    <div class="results-table-wrap">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    <th>Class Score / 30</th>
+                                    <th>Exam Score / 70</th>
+                                    <th>Total / 100</th>
+                                    <th>Grade</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for student in students %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+
+                                        <td>
+                                            {{ student['student_code'] or '-' }}
+                                        </td>
+
+                                        <td>
+                                            {{ student['first_name'] }}
+                                            {{ student['last_name'] }}
+                                        </td>
+
+                                        <td>
+                                            <input type="number"
+                                                   name="class_score_{{ student['id'] }}"
+                                                   class="class-score"
+                                                   min="0"
+                                                   max="30"
+                                                   step="0.01"
+                                                   value="{{ student['class_score'] if student['class_score'] is not none else '' }}"
+                                                   required>
+                                        </td>
+
+                                        <td>
+                                            <input type="number"
+                                                   name="exam_score_{{ student['id'] }}"
+                                                   class="exam-score"
+                                                   min="0"
+                                                   max="70"
+                                                   step="0.01"
+                                                   value="{{ student['exam_score'] if student['exam_score'] is not none else '' }}"
+                                                   required>
+                                        </td>
+
+                                        <td class="total-score">
+                                            {{ student['total_score'] if student['total_score'] is not none else '-' }}
+                                        </td>
+
+                                        <td class="grade">
+                                            {{ student['grade'] or '-' }}
+                                        </td>
+
+                                        <td class="remarks">
+                                            {{ student['remarks'] or '-' }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="results-actions no-print">
+                        <button type="submit" class="results-btn">
+                            Save Examination Results
+                        </button>
+
+                        <button type="button"
+                                class="results-btn secondary"
+                                onclick="window.print()">
+                            Print Results
+                        </button>
+                    </div>
+
+                </form>
+
+            {% else %}
+                <p>No students were found in this class.</p>
+            {% endif %}
+
+        </section>
+
+    {% elif not classes %}
+        <section class="results-panel">
+            <p>No classes are registered yet. Add a class before entering results.</p>
+            <a href="{{ url_for('add_class') }}" class="results-btn">
+                Add Class
+            </a>
+        </section>
+
+    {% elif not subjects %}
+        <section class="results-panel">
+            <p>No subjects are registered yet. Add a subject before entering results.</p>
+            <a href="{{ url_for('add_subject') }}" class="results-btn">
+                Add Subject
+            </a>
+        </section>
+
+    {% else %}
+        <section class="results-panel">
+            <p>Select a class, subject, term and academic year, then click
+               <strong>Load Students</strong>.</p>
+        </section>
+    {% endif %}
+
+</div>
+
+<script>
+    const resultsForm = document.getElementById("resultsForm");
+
+    function gradeFor(score) {
+        if (score >= 80) return ["A", "Excellent"];
+        if (score >= 70) return ["B", "Very Good"];
+        if (score >= 60) return ["C", "Good"];
+        if (score >= 50) return ["D", "Credit"];
+        if (score >= 40) return ["E", "Pass"];
+        return ["F", "Needs Improvement"];
+    }
+
+    function updateRow(row) {
+        const classInput = row.querySelector(".class-score");
+        const examInput = row.querySelector(".exam-score");
+
+        if (!classInput || !examInput) return;
+
+        const classScore = Number(classInput.value);
+        const examScore = Number(examInput.value);
+
+        const totalCell = row.querySelector(".total-score");
+        const gradeCell = row.querySelector(".grade");
+        const remarksCell = row.querySelector(".remarks");
+
+        if (
+            classInput.value === "" ||
+            examInput.value === "" ||
+            classScore < 0 ||
+            classScore > 30 ||
+            examScore < 0 ||
+            examScore > 70
+        ) {
+            totalCell.textContent = "-";
+            gradeCell.textContent = "-";
+            remarksCell.textContent = "-";
+            return;
+        }
+
+        const total = Math.round((classScore + examScore) * 100) / 100;
+        const [grade, remarks] = gradeFor(total);
+
+        totalCell.textContent = total.toFixed(2);
+        gradeCell.textContent = grade;
+        remarksCell.textContent = remarks;
+    }
+
+    if (resultsForm) {
+        resultsForm.querySelectorAll("tbody tr").forEach(row => {
+            row.querySelectorAll("input").forEach(input => {
+                input.addEventListener("input", () => updateRow(row));
+            });
+        });
+
+        resultsForm.addEventListener("submit", event => {
+            const rows = resultsForm.querySelectorAll("tbody tr");
+
+            for (const row of rows) {
+                const classInput = row.querySelector(".class-score");
+                const examInput = row.querySelector(".exam-score");
+
+                const classScore = Number(classInput.value);
+                const examScore = Number(examInput.value);
+
+                if (
+                    classInput.value === "" ||
+                    examInput.value === "" ||
+                    !Number.isFinite(classScore) ||
+                    !Number.isFinite(examScore) ||
+                    classScore < 0 ||
+                    classScore > 30 ||
+                    examScore < 0 ||
+                    examScore > 70
+                ) {
+                    event.preventDefault();
+                    alert(
+                        "Check every student's scores. Class scores must be 0–30 and exam scores 0–70."
+                    );
+                    return;
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

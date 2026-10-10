@@ -1,0 +1,466 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Profile | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .profile-page {
+            max-width: 1300px;
+            margin: auto;
+            padding: 28px;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .profile-header h1 {
+            margin-bottom: 6px;
+        }
+
+        .profile-header p,
+        .muted {
+            color: #64748b;
+        }
+
+        /* Profile action buttons */
+        .profile-button,
+        .profile-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 18px;
+            min-height: 40px;
+            box-sizing: border-box;
+            border: 1px solid #1d4ed8;
+            border-radius: 7px;
+            background: #1d4ed8;
+            color: #ffffff;
+            text-decoration: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.4;
+            margin: 4px;
+            white-space: nowrap;
+        }
+
+        .profile-button:hover,
+        .profile-btn:hover {
+            background: #1e40af;
+            border-color: #1e40af;
+        }
+
+        .profile-button.back {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+            color: #1e293b;
+        }
+
+        .profile-button.back:hover {
+            background: #cbd5e1;
+            border-color: #94a3b8;
+        }
+
+        .profile-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 22px;
+            min-width: 0;
+        }
+
+        .identity {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .identity h2 {
+            margin: 0 0 8px;
+        }
+
+        .identity p {
+            margin: 5px 0;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .detail-label {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        .finance-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .finance-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .finance-card p {
+            margin-top: 0;
+            color: #64748b;
+        }
+
+        .finance-card h2 {
+            margin-bottom: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .profile-table {
+            width: 100%;
+            min-width: 650px;
+            border-collapse: collapse;
+        }
+
+        .profile-table th,
+        .profile-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .profile-table th {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .empty-message {
+            color: #64748b;
+            padding: 10px 0;
+        }
+
+        @media (max-width: 700px) {
+            .profile-page {
+                padding: 15px;
+            }
+
+            .finance-grid,
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-header {
+                align-items: flex-start;
+            }
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            .profile-page {
+                padding: 0;
+                max-width: none;
+            }
+
+            .profile-card,
+            .finance-card {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="profile-page">
+
+        <header class="profile-header">
+            <div>
+                <h1>Student Profile</h1>
+                <p class="muted">
+                    Student information, school fees and payments
+                </p>
+            </div>
+
+            <div class="no-print">
+                <a href="{{ url_for('students') }}"
+                   class="profile-button back">
+                    Back to Students
+                </a>
+
+                <a href="{{ url_for('school_fees') }}"
+                   class="profile-btn">
+                    Student Fees
+                </a>
+
+<a href="{{ url_for('student_fee_statement',
+                    student_id=student['id']) }}"
+   class="profile-btn">
+    Fee Statement
+</a>
+
+                <button type="button"
+                        class="profile-button"
+                        onclick="window.print()">
+                    Print Profile
+                </button>
+            </div>
+        </header>
+
+        <section class="profile-card identity">
+            <div class="avatar">
+                {{ (student['first_name'] or 'S')[0]|upper }}
+            </div>
+
+            <div>
+                <h2>
+                    {{ student['first_name'] }}
+                    {{ student['last_name'] }}
+                </h2>
+
+                <p>
+                    Student ID:
+                    <strong>
+                        {{ student['student_code'] or 'Not assigned' }}
+                    </strong>
+                </p>
+
+                <p>
+                    Class:
+                    <strong>{{ student['class_name'] }}</strong>
+                </p>
+            </div>
+        </section>
+
+        <div class="details-grid">
+
+            <section class="profile-card">
+                <h3>Personal Information</h3>
+
+                <div class="details-grid">
+                    <div>
+                        <div class="detail-label">First Name</div>
+                        <div class="detail-value">
+                            {{ student['first_name'] }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="detail-label">Last Name</div>
+                        <div class="detail-value">
+                            {{ student['last_name'] }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="detail-label">Gender</div>
+                        <div class="detail-value">
+                            {{ student['gender'] or 'Not provided' }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="detail-label">Date of Birth</div>
+                        <div class="detail-value">
+                            {{ student['date_of_birth'] or 'Not provided' }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="detail-label">Student ID</div>
+                        <div class="detail-value">
+                            {{ student['student_code'] or 'Not assigned' }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="detail-label">Registered On</div>
+                        <div class="detail-value">
+                            {{ student['created_at'] or 'Not available' }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="profile-card">
+                <h3>Guardian Information</h3>
+
+                <div class="details-grid">
+                    <div>
+                        <div class="detail-label">Guardian Name</div>
+                        <div class="detail-value">
+                            {{ student['guardian_name'] or 'Not provided' }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="detail-label">Guardian Phone</div>
+                        <div class="detail-value">
+                            {{ student['guardian_phone'] or 'Not provided' }}
+                        </div>
+                    </div>
+
+                    <div style="grid-column: 1 / -1;">
+                        <div class="detail-label">Home Address</div>
+                        <div class="detail-value">
+                            {{ student['address'] or 'Not provided' }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <h2>Financial Summary</h2>
+
+        <div class="finance-grid">
+            <section class="finance-card">
+                <p>Total Fees</p>
+                <h2>GH₵ {{ "%.2f"|format(total_fees) }}</h2>
+            </section>
+
+            <section class="finance-card">
+                <p>Total Paid</p>
+                <h2>GH₵ {{ "%.2f"|format(total_paid) }}</h2>
+            </section>
+
+            <section class="finance-card">
+                <p>Outstanding Balance</p>
+                <h2>GH₵ {{ "%.2f"|format(outstanding_balance) }}</h2>
+            </section>
+        </div>
+
+        <section class="profile-card">
+            <h3>School Fee Records</h3>
+
+            {% if fee_records %}
+                <div class="table-wrap">
+                    <table class="profile-table">
+                        <thead>
+                            <tr>
+                                <th>Fee Name</th>
+                                <th>Academic Year</th>
+                                <th>Term</th>
+                                <th>Amount Due</th>
+                                <th>Amount Paid</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for fee in fee_records %}
+                                <tr>
+                                    <td>{{ fee['fee_name'] }}</td>
+                                    <td>{{ fee['academic_year'] }}</td>
+                                    <td>{{ fee['term'] }}</td>
+                                    <td>
+                                        GH₵ {{ "%.2f"|format(fee['amount_due'] or 0) }}
+                                    </td>
+                                    <td>
+                                        GH₵ {{ "%.2f"|format(fee['amount_paid'] or 0) }}
+                                    </td>
+                                    <td>
+                                        GH₵ {{ "%.2f"|format(
+                                            [0, (fee['amount_due'] or 0) - (fee['amount_paid'] or 0)]|max
+                                        ) }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-message">
+                    No school fees have been assigned to this student.
+                </p>
+            {% endif %}
+        </section>
+
+        <section class="profile-card">
+            <h3>Payment History</h3>
+
+            {% if payment_history %}
+                <div class="table-wrap">
+                    <table class="profile-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Fee</th>
+                                <th>Academic Year</th>
+                                <th>Term</th>
+                                <th>Amount Paid</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for payment in payment_history %}
+                                <tr>
+                                    <td>{{ payment['payment_date'] }}</td>
+                                    <td>{{ payment['fee_name'] }}</td>
+                                    <td>{{ payment['academic_year'] }}</td>
+                                    <td>{{ payment['term'] }}</td>
+                                    <td>
+                                        GH₵ {{ "%.2f"|format(payment['amount_paid'] or 0) }}
+                                    </td>
+                                    <td>{{ payment['payment_method'] }}</td>
+                                    <td>{{ payment['reference'] or '—' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-message">
+                    No payments have been recorded for this student.
+                </p>
+            {% endif %}
+        </section>
+
+    </main>
+</body>
+</html>

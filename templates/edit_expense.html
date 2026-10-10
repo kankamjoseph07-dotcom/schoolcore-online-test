@@ -1,0 +1,224 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Expense | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px 15px;
+            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        .edit-container {
+            max-width: 800px;
+            margin: auto;
+            padding: 30px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #0f172a;
+        }
+
+        .intro {
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 7px;
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .cancel {
+            background: #475569;
+        }
+
+        @media (max-width: 550px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .field.full {
+                grid-column: auto;
+            }
+
+            .edit-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="edit-container">
+        <h1>Edit School Expense</h1>
+        <p class="intro">
+            Update the expense details and save your changes.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="form-grid">
+
+                <div class="field">
+                    <label for="expense_name">Expense Name *</label>
+                    <input id="expense_name"
+                           name="expense_name"
+                           type="text"
+                           maxlength="150"
+                           value="{{ expense.expense_name }}"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        {% for item in [
+                            'Utilities', 'Salaries', 'Stationery',
+                            'Maintenance', 'Teaching Materials',
+                            'Transportation', 'Food', 'Other'
+                        ] %}
+                            <option value="{{ item }}"
+                                {% if expense.category == item %}selected{% endif %}>
+                                {{ item }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="amount">Amount (GH₵) *</label>
+                    <input id="amount"
+                           name="amount"
+                           type="number"
+                           min="0.01"
+                           step="0.01"
+                           value="{{ expense.amount }}"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label for="expense_date">Expense Date *</label>
+                    <input id="expense_date"
+                           name="expense_date"
+                           type="date"
+                           value="{{ expense.expense_date }}"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label for="payment_method">Payment Method *</label>
+                    <select id="payment_method"
+                            name="payment_method"
+                            required>
+                        {% for item in [
+                            'Cash', 'Bank Transfer', 'Mobile Money',
+                            'Cheque', 'Other'
+                        ] %}
+                            <option value="{{ item }}"
+                                {% if expense.payment_method == item %}selected{% endif %}>
+                                {{ item }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="reference">Payment Reference</label>
+                    <input id="reference"
+                           name="reference"
+                           type="text"
+                           maxlength="100"
+                           value="{{ expense.reference or '' }}">
+                </div>
+
+                <div class="field full">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes"
+                              name="notes"
+                              maxlength="500">{{ expense.notes or '' }}</textarea>
+                </div>
+
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="button">Save Changes</button>
+
+                <a href="{{ url_for('school_expenses') }}"
+                   class="button cancel">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </main>
+</body>
+</html>
+```

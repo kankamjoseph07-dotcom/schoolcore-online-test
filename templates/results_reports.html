@@ -1,0 +1,387 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Results Reports | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .report-page {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 24px;
+        }
+
+        .report-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 24px;
+        }
+
+        .report-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .report-panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .report-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 18px;
+            align-items: end;
+        }
+
+        .report-filters label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .report-filters input,
+        .report-filters select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px;
+            border: 1px solid #d5dce5;
+            border-radius: 7px;
+            background: white;
+        }
+
+        .report-btn {
+            display: inline-block;
+            padding: 11px 18px;
+            border: none;
+            border-radius: 7px;
+            background: #2457d6;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .report-btn.secondary {
+            background: #526174;
+        }
+
+        .report-btn:hover {
+            opacity: 0.9;
+        }
+
+        .report-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .summary-card p {
+            margin: 0 0 10px;
+            color: #657186;
+            font-size: 14px;
+        }
+
+        .summary-card h2 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .report-table-wrap {
+            overflow-x: auto;
+        }
+
+        .report-table {
+            width: 100%;
+            min-width: 750px;
+            border-collapse: collapse;
+        }
+
+        .report-table th,
+        .report-table td {
+            padding: 13px;
+            border-bottom: 1px solid #e7ebf0;
+            text-align: left;
+        }
+
+        .report-table th {
+            background: #f4f7fb;
+        }
+
+        .report-empty {
+            padding: 20px;
+            background: #f4f7fb;
+            border-radius: 8px;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        @media print {
+            .no-print,
+            nav,
+            aside {
+                display: none !important;
+            }
+
+            .report-page {
+                margin: 0;
+                padding: 0;
+            }
+
+            .report-panel,
+            .summary-card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+
+            body {
+                background: white !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="report-page">
+
+    <header class="report-header">
+        <div>
+            <h1>Student Results Reports</h1>
+            <p>Review class performance and examination results.</p>
+        </div>
+
+        <div class="no-print">
+            <a href="{{ url_for('dashboard') }}"
+               class="report-btn secondary">
+                Back to Dashboard
+            </a>
+        </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="report-panel">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="report-panel no-print">
+        <h2>Filter Results</h2>
+
+        <form method="GET"
+              action="{{ url_for('results_reports') }}"
+              class="report-filters">
+
+            <div>
+                <label for="class_name">Class</label>
+                <select name="class_name" id="class_name" required>
+                    <option value="">Select class</option>
+
+                    {% for school_class in classes %}
+                        <option value="{{ school_class['class_name'] }}"
+                            {% if selected_class == school_class['class_name'] %}
+                                selected
+                            {% endif %}>
+                            {{ school_class['class_name'] }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="subject_id">Subject</label>
+                <select name="subject_id" id="subject_id" required>
+                    <option value="">Select subject</option>
+
+                    {% for subject in subjects %}
+                        <option value="{{ subject['id'] }}"
+                            {% if selected_subject|string == subject['id']|string %}
+                                selected
+                            {% endif %}>
+                            {{ subject['subject_name'] }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="term">Term</label>
+                <select name="term" id="term" required>
+                    <option value="First Term"
+                        {% if term == 'First Term' %}selected{% endif %}>
+                        First Term
+                    </option>
+                    <option value="Second Term"
+                        {% if term == 'Second Term' %}selected{% endif %}>
+                        Second Term
+                    </option>
+                    <option value="Third Term"
+                        {% if term == 'Third Term' %}selected{% endif %}>
+                        Third Term
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label for="academic_year">Academic Year</label>
+                <input type="text"
+                       name="academic_year"
+                       id="academic_year"
+                       value="{{ academic_year }}"
+                       placeholder="2026/2027"
+                       pattern="[0-9]{4}/[0-9]{4}"
+                       title="Use the format 2026/2027"
+                       required>
+            </div>
+
+            <div>
+                <button type="submit" class="report-btn">
+                    Generate Report
+                </button>
+            </div>
+
+        </form>
+    </section>
+
+    {% if selected_class and selected_subject %}
+
+        <section class="report-panel">
+            <h2>SchoolCore Examination Report</h2>
+
+            <p><strong>Class:</strong> {{ selected_class }}</p>
+            <p><strong>Term:</strong> {{ term }}</p>
+            <p><strong>Academic Year:</strong> {{ academic_year }}</p>
+
+            {% for subject in subjects %}
+                {% if selected_subject|string == subject['id']|string %}
+                    <p><strong>Subject:</strong> {{ subject['subject_name'] }}</p>
+                {% endif %}
+            {% endfor %}
+        </section>
+
+        <div class="report-summary">
+            <div class="summary-card">
+                <p>Students with Results</p>
+                <h2>{{ totals['students'] }}</h2>
+            </div>
+
+            <div class="summary-card">
+                <p>Class Average</p>
+                <h2>{{ "%.2f"|format(average_score) }}%</h2>
+            </div>
+
+            <div class="summary-card">
+                <p>Passed (50%+)</p>
+                <h2>{{ totals['passed'] }}</h2>
+            </div>
+
+            <div class="summary-card">
+                <p>Failed (Below 50%)</p>
+                <h2>{{ totals['failed'] }}</h2>
+            </div>
+        </div>
+
+        <div class="report-actions no-print">
+            <button type="button"
+                    class="report-btn"
+                    onclick="window.print()">
+                Print Report
+            </button>
+
+            <a href="{{ url_for(
+                'results',
+                class_name=selected_class,
+                subject_id=selected_subject,
+                term=term,
+                academic_year=academic_year
+            ) }}" class="report-btn secondary">
+                Edit Results
+            </a>
+        </div>
+
+        <section class="report-panel">
+            <h2>Student Performance</h2>
+
+            {% if records %}
+                <div class="report-table-wrap">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
+                                <th>Class Score / 30</th>
+                                <th>Exam Score / 70</th>
+                                <th>Total / 100</th>
+                                <th>Grade</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for record in records %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ record['student_code'] or '-' }}</td>
+                                    <td>
+                                        {{ record['first_name'] }}
+                                        {{ record['last_name'] }}
+                                    </td>
+                                    <td>{{ "%.2f"|format(record['class_score']) }}</td>
+                                    <td>{{ "%.2f"|format(record['exam_score']) }}</td>
+                                    <td><strong>{{ "%.2f"|format(record['total_score']) }}</strong></td>
+                                    <td>{{ record['grade'] }}</td>
+                                    <td>{{ record['remarks'] }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="report-empty">
+                    No results were found for these filters.
+                    Enter and save the students' results first.
+                </div>
+            {% endif %}
+        </section>
+
+    {% else %}
+
+        <section class="report-panel">
+            <p>
+                Select a class, subject, term and academic year,
+                then click <strong>Generate Report</strong>.
+            </p>
+        </section>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

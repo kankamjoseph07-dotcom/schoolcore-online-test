@@ -1,0 +1,533 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Reports | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .report-page {
+            max-width: 1400px;
+            margin: auto;
+            padding: 30px;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .report-header h1 {
+            margin: 0 0 8px;
+            color: #0f172a;
+        }
+
+        .report-header p,
+        .report-note {
+            color: #64748b;
+        }
+
+        .report-button {
+            display: inline-block;
+            padding: 11px 16px;
+            background: #1e40af;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .report-button:hover {
+            background: #1d4ed8;
+        }
+
+        .report-filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 15px;
+            padding: 22px;
+            margin-bottom: 25px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .report-field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .report-field label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .report-field input {
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font: inherit;
+        }
+
+        .report-summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .report-card {
+            padding: 24px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+        }
+
+        .report-card span {
+            display: block;
+            margin-bottom: 12px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .report-card strong {
+            display: block;
+            font-size: 26px;
+            color: #0f172a;
+            overflow-wrap: anywhere;
+        }
+
+        .report-card small {
+            display: block;
+            margin-top: 9px;
+            color: #64748b;
+        }
+
+        .report-income {
+            border-top: 4px solid #15803d;
+        }
+
+        .report-expenses {
+            border-top: 4px solid #d97706;
+        }
+
+        .report-balance {
+            border-top: 4px solid #2563eb;
+        }
+
+        .report-panel {
+            padding: 24px;
+            margin-bottom: 25px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.03);
+        }
+
+        .report-panel h2 {
+            margin-top: 0;
+            color: #0f172a;
+            font-size: 19px;
+        }
+
+        .report-panel > p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .report-chart {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        .report-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        .report-table th,
+        .report-table td {
+            padding: 13px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .report-table th {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .report-table td {
+            color: #334155;
+        }
+
+        .report-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .report-empty {
+            padding: 25px;
+            text-align: center !important;
+            color: #64748b !important;
+        }
+
+        .report-positive {
+            color: #15803d !important;
+        }
+
+        .report-negative {
+            color: #dc2626 !important;
+        }
+
+        .report-note {
+            margin: 10px 0 22px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 800px) {
+            .report-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .report-page {
+                padding: 15px;
+            }
+
+            .report-panel {
+                padding: 16px;
+            }
+
+            .report-chart {
+                height: 280px;
+            }
+        }
+
+        @media print {
+            .report-filters,
+            .report-header a,
+            .no-print {
+                display: none !important;
+            }
+
+            .report-page {
+                max-width: none;
+                padding: 0;
+            }
+
+            .report-card,
+            .report-panel {
+                box-shadow: none;
+                break-inside: avoid;
+            }
+
+            .report-chart {
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="report-page">
+
+    <header class="report-header">
+        <div>
+            <h1>Financial Reports</h1>
+            <p>Monitor fee collections, school expenses and net balance.</p>
+        </div>
+
+        <a class="report-button"
+           href="{{ url_for('dashboard') }}">
+            Back to Dashboard
+        </a>
+    </header>
+
+    <!-- Date filters -->
+    <form method="GET"
+          action="{{ url_for('financial_reports') }}"
+          class="report-filters">
+
+        <div class="report-field">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date"
+                   name="start_date" value="{{ start_date }}">
+        </div>
+
+        <div class="report-field">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date"
+                   name="end_date" value="{{ end_date }}">
+        </div>
+
+        <button class="report-button" type="submit">
+            Generate Report
+        </button>
+
+        <a class="report-button"
+           href="{{ url_for('financial_reports') }}">
+            Clear Dates
+        </a>
+
+        <button class="report-button" type="button"
+                onclick="window.print()">
+            Print Report
+        </button>
+    </form>
+
+    <!-- Financial summary -->
+    <section class="report-summary">
+        <div class="report-card report-income">
+            <span>Total Fee Payments Received</span>
+            <strong>GH₵ {{ "%.2f"|format(total_income) }}</strong>
+            <small>{{ payment_count }} payment record(s)</small>
+        </div>
+
+        <div class="report-card report-expenses">
+            <span>Total School Expenses</span>
+            <strong>GH₵ {{ "%.2f"|format(total_expenses) }}</strong>
+            <small>{{ expense_count }} expense record(s)</small>
+        </div>
+
+        <div class="report-card report-balance">
+            <span>Net Balance</span>
+            <strong class="{{ 'report-positive' if net_balance >= 0 else 'report-negative' }}">
+                GH₵ {{ "%.2f"|format(net_balance) }}
+            </strong>
+            <small>Payments received minus recorded expenses</small>
+        </div>
+    </section>
+
+    <p class="report-note">
+        {% if start_date or end_date %}
+            Report period:
+            {{ start_date if start_date else "Earliest recorded date" }}
+            to
+            {{ end_date if end_date else "Latest recorded date" }}.
+        {% else %}
+            Showing all recorded fee payments and expenses.
+        {% endif %}
+        This is a cash summary, not a complete accounting statement.
+    </p>
+
+    <!-- Monthly chart -->
+    <section class="report-panel">
+        <h2>Monthly Financial Trends</h2>
+        <p>Compare fee income, expenses and net balance by month.</p>
+
+        <div class="report-chart">
+            <canvas id="monthlyFinancialChart"></canvas>
+        </div>
+
+        <p class="report-note">
+            The chart uses the selected report dates when filters are applied.
+        </p>
+    </section>
+
+    <!-- Monthly summary table -->
+    <section class="report-panel">
+        <h2>Monthly Financial Summary</h2>
+
+        <div class="report-table-wrapper">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Income (GH₵)</th>
+                        <th>Expenses (GH₵)</th>
+                        <th>Net Balance (GH₵)</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in monthly_summary %}
+                    <tr>
+                        <td>{{ item.month }}</td>
+                        <td>{{ "%.2f"|format(item.income) }}</td>
+                        <td>{{ "%.2f"|format(item.expenses) }}</td>
+                        <td class="{{ 'report-positive' if item.balance >= 0 else 'report-negative' }}">
+                            {{ "%.2f"|format(item.balance) }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="report-empty">
+                            No monthly transactions found for this period.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Recent fee payments -->
+    <section class="report-panel">
+        <h2>Recent Fee Payments</h2>
+
+        <div class="report-table-wrapper">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Fee Record ID</th>
+                        <th>Payment Date</th>
+                        <th>Amount Received</th>
+                        <th>Payment Method</th>
+                        <th>Reference</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for payment in recent_payments %}
+                    <tr>
+                        <td>{{ payment.id }}</td>
+                        <td>{{ payment.fee_id }}</td>
+                        <td>{{ payment.payment_date }}</td>
+                        <td>GH₵ {{ "%.2f"|format(payment.amount_paid|float) }}</td>
+                        <td>{{ payment.payment_method }}</td>
+                        <td>{{ payment.reference or "—" }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="report-empty">
+                            No fee payments found for this period.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Recent expenses -->
+    <section class="report-panel">
+        <h2>Recent School Expenses</h2>
+
+        <div class="report-table-wrapper">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Expense ID</th>
+                        <th>Date</th>
+                        <th>Expense Name</th>
+                        <th>Category</th>
+                        <th>Payment Method</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for expense in recent_expenses %}
+                    <tr>
+                        <td>{{ expense.id }}</td>
+                        <td>{{ expense.expense_date }}</td>
+                        <td>{{ expense.expense_name }}</td>
+                        <td>{{ expense.category }}</td>
+                        <td>{{ expense.payment_method }}</td>
+                        <td>GH₵ {{ "%.2f"|format(expense.amount|float) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="report-empty">
+                            No expenses found for this period.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    const monthlyLabels = JSON.parse('{{ chart_labels | tojson | safe }}');
+    const monthlyIncome = JSON.parse('{{ chart_income | tojson | safe }}');
+    const monthlyExpenses = JSON.parse('{{ chart_expenses | tojson | safe }}');
+    const monthlyBalance = JSON.parse('{{ chart_balance | tojson | safe }}');
+
+    const chartCanvas = document.getElementById("monthlyFinancialChart");
+
+    if (chartCanvas && typeof Chart !== "undefined") {
+        new Chart(chartCanvas, {
+            type: "bar",
+            data: {
+                labels: monthlyLabels,
+                datasets: [
+                    {
+                        label: "Income (GH₵)",
+                        data: monthlyIncome,
+                        backgroundColor: "#15803d",
+                        borderRadius: 4
+                    },
+                    {
+                        label: "Expenses (GH₵)",
+                        data: monthlyExpenses,
+                        backgroundColor: "#d97706",
+                        borderRadius: 4
+                    },
+                    {
+                        label: "Net Balance (GH₵)",
+                        data: monthlyBalance,
+                        type: "line",
+                        borderColor: "#2563eb",
+                        backgroundColor: "#2563eb",
+                        tension: 0.25,
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: "index",
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Amount (GH₵)"
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: "top"
+                    }
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

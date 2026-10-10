@@ -1,0 +1,406 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Fee Statement | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .statement-page {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 25px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .statement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .statement-header h1 {
+            margin: 0;
+            color: #17365d;
+        }
+
+        .statement-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .statement-btn {
+            display: inline-block;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #17365d;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .statement-btn:hover {
+            opacity: 0.88;
+        }
+
+        .student-details,
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .detail-card,
+        .summary-card {
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .detail-card span,
+        .summary-card span {
+            display: block;
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .detail-card strong,
+        .summary-card strong {
+            color: #172b4d;
+            overflow-wrap: anywhere;
+        }
+
+        .summary-card strong {
+            font-size: 21px;
+        }
+
+        .statement-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+
+        .statement-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .statement-table th,
+        .statement-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .statement-table th {
+            background: #17365d;
+            color: white;
+        }
+
+        .statement-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .statement-section-title {
+            margin: 25px 0 12px;
+            color: #17365d;
+        }
+
+        .statement-empty {
+            padding: 20px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .statement-footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+/* View Receipt button */
+.statement-receipt-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    background-color: #2563eb;
+    color: #ffffff !important;
+    border: 1px solid #1d4ed8;
+    border-radius: 5px;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.statement-receipt-btn:hover {
+    background-color: #1d4ed8;
+}
+
+        @media print {
+            body {
+                background: white !important;
+            }
+
+            .statement-page {
+                max-width: none;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .statement-table th {
+                background: #e5e7eb !important;
+                color: #111827 !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            .statement-receipt-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    background: #2563eb;
+    color: #ffffff !important;
+    border: 1px solid #1d4ed8;
+    border-radius: 5px;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.statement-receipt-btn:hover {
+    background: #1d4ed8;
+}
+        .school-statement-heading p {
+            margin: 5px 0;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .school-statement-heading h2 {
+            margin-top: 18px;
+            color: #17365d;
+        }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="statement-page">
+
+    
+    <div class="statement-header">
+        <div class="school-statement-heading">
+            <h1>{{ settings["school_name"] or "SchoolCore" }}</h1>
+
+            {% if settings["school_address"] %}
+                <p>{{ settings["school_address"] }}</p>
+            {% endif %}
+
+            {% if settings["school_phone"] %}
+                <p>Phone: {{ settings["school_phone"] }}</p>
+            {% endif %}
+
+            {% if settings["school_email"] %}
+                <p>Email: {{ settings["school_email"] }}</p>
+            {% endif %}
+
+            {% if settings["academic_year"] %}
+                <p>Academic Year: {{ settings["academic_year"] }}</p>
+            {% endif %}
+
+            {% if settings["current_term"] %}
+                <p>Current Term: {{ settings["current_term"] }}</p>
+            {% endif %}
+
+            <h2>Student Fee Statement</h2>
+        </div>
+
+
+        <div class="statement-buttons no-print">
+            <button type="button"
+                    class="statement-btn"
+                    onclick="window.print()">
+                Print Statement
+            </button>
+
+            <a href="{{ url_for('students') }}"
+               class="statement-btn">
+                Back to Students
+            </a>
+
+            <a href="{{ url_for('school_fees') }}"
+               class="statement-btn">
+                School Fees
+            </a>
+        </div>
+    </div>
+
+    <h2 class="statement-section-title">Student Information</h2>
+
+    <div class="student-details">
+        <div class="detail-card">
+            <span>Student ID</span>
+            <strong>{{ student['student_code'] or 'Not assigned' }}</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>Student Name</span>
+            <strong>{{ student['first_name'] }} {{ student['last_name'] }}</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>Class</span>
+            <strong>{{ student['class_name'] }}</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>Guardian</span>
+            <strong>{{ student['guardian_name'] or 'Not provided' }}</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>Guardian Phone</span>
+            <strong>{{ student['guardian_phone'] or 'Not provided' }}</strong>
+        </div>
+    </div>
+
+    <h2 class="statement-section-title">Financial Summary</h2>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <span>Total Fees Assigned</span>
+            <strong>GH₵ {{ "%.2f"|format(total_fees) }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Total Payments</span>
+            <strong>GH₵ {{ "%.2f"|format(total_paid) }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Outstanding Balance</span>
+            <strong>GH₵ {{ "%.2f"|format(outstanding_balance) }}</strong>
+        </div>
+    </div>
+
+    <h2 class="statement-section-title">Assigned Fees</h2>
+
+    <div class="statement-table-wrap">
+        <table class="statement-table">
+            <thead>
+                <tr>
+                    <th>Fee Name</th>
+                    <th>Academic Year</th>
+                    <th>Term</th>
+                    <th>Amount Due (GH₵)</th>
+                    <th>Amount Paid (GH₵)</th>
+                    <th>Balance (GH₵)</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for fee in fee_records %}
+                <tr>
+                    <td>{{ fee['fee_name'] }}</td>
+                    <td>{{ fee['academic_year'] }}</td>
+                    <td>{{ fee['term'] }}</td>
+                    <td>{{ "%.2f"|format(fee['amount_due'] or 0) }}</td>
+                    <td>{{ "%.2f"|format(fee['amount_paid'] or 0) }}</td>
+                    <td>
+                        {{ "%.2f"|format(
+                            [0, (fee['amount_due'] or 0) -
+                            (fee['amount_paid'] or 0)]|max
+                        ) }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="statement-empty">
+                        No school fees have been assigned to this student.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="statement-section-title">Payment History</h2>
+
+    <div class="statement-table-wrap">
+        <table class="statement-table">
+            <thead>
+                <tr>
+                    <th>Payment Date</th>
+                    <th>Fee Name</th>
+                    <th>Academic Year</th>
+                    <th>Term</th>
+                    <th>Amount (GH₵)</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th class="no-print">Receipt</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for payment in payment_history %}
+                <tr>
+                    <td>{{ payment['payment_date'] }}</td>
+                    <td>{{ payment['fee_name'] }}</td>
+                    <td>{{ payment['academic_year'] }}</td>
+                    <td>{{ payment['term'] }}</td>
+                    <td>{{ "%.2f"|format(payment['amount_paid'] or 0) }}</td>
+                    <td>{{ payment['payment_method'] }}</td>
+                    <td>{{ payment['reference'] or '-' }}</td>
+                    <td class="no-print">
+                        <a href="{{ url_for('fee_payment_receipt_page', payment_id=payment['payment_id']) }}"
+   class="statement-receipt-btn">
+    View Receipt
+</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="statement-empty">
+                        No payments have been recorded for this student.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="statement-footer">
+        <p>This statement reflects the fee and payment records currently saved in SchoolCore.</p>
+        <p>Generated on {{ generated_date }}</p>
+    </div>
+
+</div>
+
+</body>
+</html>

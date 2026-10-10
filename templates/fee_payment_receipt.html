@@ -1,0 +1,323 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Payment Receipt | SchoolCore</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            margin: 0;
+            padding: 25px;
+        }
+
+        .receipt {
+            max-width: 760px;
+            margin: 20px auto;
+            padding: 35px;
+            background: #fff;
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid #1d4ed8;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .receipt-header h1 {
+            color: #1d4ed8;
+            font-size: 28px;
+            margin: 0 0 10px;
+        }
+
+        .school-contact {
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        .school-contact p {
+            margin: 2px 0;
+        }
+
+        .receipt-subtitle {
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .receipt-number {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .receipt-details {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .detail {
+            padding: 13px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 7px;
+            overflow-wrap: anywhere;
+        }
+
+        .detail span {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 7px;
+        }
+
+        .detail strong {
+            font-size: 14px;
+        }
+
+        .amount {
+            margin-top: 25px;
+            padding: 22px;
+            text-align: center;
+            background: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+        }
+
+        .amount p {
+            margin: 0;
+        }
+
+        .amount h2 {
+            color: #1d4ed8;
+            font-size: 30px;
+            margin: 10px 0;
+        }
+
+        .payment-status {
+            color: #166534;
+            font-size: 13px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .actions {
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        .actions a,
+        .actions button {
+            display: inline-block;
+            margin: 5px;
+            padding: 11px 18px;
+            border: none;
+            border-radius: 7px;
+            background: #1d4ed8;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .actions a {
+            background: #475569;
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 10px;
+            }
+
+            .receipt {
+                padding: 18px;
+                margin: 10px auto;
+            }
+
+            .receipt-details {
+                grid-template-columns: 1fr;
+            }
+
+            .receipt-header h1 {
+                font-size: 23px;
+            }
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 12mm;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                color: #111827;
+            }
+
+            .receipt {
+                max-width: none;
+                margin: 0;
+                padding: 15px;
+                border: 1px solid #d1d5db;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .actions {
+                display: none;
+            }
+
+            .detail,
+            .amount {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="receipt">
+
+        <header class="receipt-header">
+            <h1>
+                {{ settings["school_name"] or "SchoolCore" }}
+            </h1>
+
+            <div class="school-contact">
+
+                {% if settings["school_address"] %}
+                    <p>{{ settings["school_address"] }}</p>
+                {% endif %}
+
+                {% if settings["school_phone"] %}
+                    <p>Phone: {{ settings["school_phone"] }}</p>
+                {% endif %}
+
+                {% if settings["school_email"] %}
+                    <p>Email: {{ settings["school_email"] }}</p>
+                {% endif %}
+
+                {% if settings["academic_year"] %}
+                    <p>Academic Year: {{ settings["academic_year"] }}</p>
+                {% endif %}
+
+                {% if settings["current_term"] %}
+                    <p>Current Term: {{ settings["current_term"] }}</p>
+                {% endif %}
+
+            </div>
+
+            <p class="receipt-subtitle">
+                OFFICIAL SCHOOL FEE PAYMENT RECEIPT
+            </p>
+        </header>
+
+        <div class="receipt-number">
+            <span>Receipt No: SCR-{{ payment["payment_id"] }}</span>
+            <span>Date: {{ payment["payment_date"] }}</span>
+        </div>
+
+        <section class="receipt-details">
+
+            <div class="detail">
+                <span>Student Name</span>
+                <strong>
+                    {{ payment["first_name"] }} {{ payment["last_name"] }}
+                </strong>
+            </div>
+
+            <div class="detail">
+                <span>Student ID</span>
+                <strong>{{ payment["student_code"] or "—" }}</strong>
+            </div>
+
+            <div class="detail">
+                <span>Class</span>
+                <strong>{{ payment["class_name"] or "—" }}</strong>
+            </div>
+
+            <div class="detail">
+                <span>Fee Name</span>
+                <strong>{{ payment["fee_name"] or "—" }}</strong>
+            </div>
+
+            <div class="detail">
+                <span>Fee Academic Year</span>
+                <strong>{{ payment["academic_year"] or "—" }}</strong>
+            </div>
+
+            <div class="detail">
+                <span>Fee Term</span>
+                <strong>{{ payment["term"] or "—" }}</strong>
+            </div>
+
+            <div class="detail">
+                <span>Payment Method</span>
+                <strong>{{ payment["payment_method"] or "—" }}</strong>
+            </div>
+
+            <div class="detail">
+                <span>Payment Reference</span>
+                <strong>{{ payment["reference"] or "—" }}</strong>
+            </div>
+
+        </section>
+
+        <section class="amount">
+            <p>AMOUNT RECEIVED</p>
+
+            <h2>
+                GH₵ {{ "%.2f"|format(payment["amount_paid"]) }}
+            </h2>
+
+            <strong class="payment-status">PAYMENT RECEIVED</strong>
+        </section>
+
+        <footer class="footer">
+            <p><strong>Thank you for your payment.</strong></p>
+            <p>Please keep this receipt for your records.</p>
+            <p>{{ settings["school_name"] or "SchoolCore" }}</p>
+        </footer>
+
+    </main>
+
+    <div class="actions">
+        <button type="button" onclick="window.print()">
+            Print Receipt
+        </button>
+
+        <a href="{{ url_for('fee_payment_history') }}">
+            Back to Payment History
+        </a>
+    </div>
+
+</body>
+</html>

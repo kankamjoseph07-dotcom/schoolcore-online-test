@@ -1,0 +1,257 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Management | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .students-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 25px;
+        }
+
+        .students-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .students-header h1 {
+            margin-bottom: 5px;
+        }
+
+        .student-summary {
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            background: #f3f6fb;
+        }
+
+        .student-search {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .student-search input {
+            flex: 1;
+            min-width: 220px;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .students-table-wrap {
+            overflow-x: auto;
+        }
+
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .students-table th,
+        .students-table td {
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .students-table th {
+            background: #f3f4f6;
+        }
+
+        .student-actions {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 8px 11px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .view-btn {
+            background: #2563eb;
+        }
+        .report-btn {
+            background: #7c3aed;
+        }
+        .edit-btn {
+            background: #0f766e;
+        }
+
+        .delete-btn {
+            background: #dc2626;
+        }
+
+        .primary-btn {
+            display: inline-block;
+            padding: 11px 16px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .flash-message {
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            background: #e0f2fe;
+        }
+
+        .empty-state {
+            padding: 25px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="students-page">
+
+        <div class="students-header">
+            <div>
+                <h1>Student Management</h1>
+                <p>Register, search, and manage student records.</p>
+            </div>
+
+            <a href="{{ url_for('add_student') }}"
+               class="primary-btn">
+                + Register Student
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="student-summary">
+            <h3>Total Students</h3>
+            <h2>{{ total }}</h2>
+        </div>
+
+        <form method="GET"
+              action="{{ url_for('students') }}"
+              class="student-search">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Search by student name, ID, or class..."
+                value="{{ request.args.get('search', '') }}"
+            >
+
+            <button type="submit" class="primary-btn">
+                Search
+            </button>
+
+            <a href="{{ url_for('students') }}"
+               class="primary-btn">
+                Clear
+            </a>
+        </form>
+
+        <div class="students-table-wrap">
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Gender</th>
+                        <th>Class</th>
+                        <th>Guardian</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.student_name }}</td>
+                        <td>{{ student.gender }}</td>
+                        <td>{{ student.class_name }}</td>
+                        <td>{{ student.guardian_name }}</td>
+                        <td>{{ student.guardian_phone }}</td>
+
+                        <td>
+                            <div class="student-actions">
+
+                                <a href="{{ url_for('student_profile', student_id=student.id) }}"
+                                   class="action-btn view-btn">
+                                    View Profile
+                                </a>
+
+                                <a href="{{ url_for('student_report_card', student_id=student.id) }}"
+                                   class="action-btn report-btn">
+                                    Report Card
+                                </a>
+
+                               <a href="{{ url_for('edit_student', student_id=student.id) }}"
+                                   class="action-btn edit-btn">
+                                    Edit
+                                </a>
+
+                                <form method="POST"
+                                      
+action="{{ url_for('delete_student', student_id=student.id) }}"
+
+                                      onsubmit="return confirm('Are you sure you want to delete this student?');">
+
+                                    <button type="submit"
+                                            class="action-btn delete-btn">
+                                        Delete
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            No students found. Register a student or try
+                            another search.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>

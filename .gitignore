@@ -1,0 +1,27 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Private school databases
+database/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.sqlite-journal
+
+# Private settings and secrets
+.env
+.env.*
+!.env.example
+
+# Backups and logs
+*BACKUP*/
+*.bak
+*.old
+*.log

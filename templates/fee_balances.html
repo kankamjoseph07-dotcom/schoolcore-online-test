@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Fee Balances | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .balance-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .balance-heading {
+            margin-bottom: 24px;
+        }
+
+        .balance-heading h1 {
+            margin-bottom: 8px;
+        }
+
+        .balance-heading p {
+            color: #64748b;
+        }
+
+        .balance-cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .balance-card {
+            background: white;
+            padding: 22px;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .balance-card span {
+            display: block;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .balance-card strong {
+            font-size: 26px;
+            color: #1e293b;
+        }
+
+        .balance-table-wrap {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            overflow-x: auto;
+        }
+
+        .balance-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px;
+        }
+
+        .balance-table th,
+        .balance-table td {
+            padding: 15px 18px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .balance-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .balance-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .balance-status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-paid {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-unpaid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-none {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .balance-empty {
+            text-align: center;
+            padding: 35px;
+            color: #64748b;
+        }
+
+        
+.balance-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px 24px;
+    background-color: #1764f5;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 9px;
+    border: 1px solid #1764f5;
+    transition: background-color 0.2s ease;
+}
+
+.balance-back:hover {
+    background-color: #0f50d8;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.balance-back span {
+    color: #ffffff;
+}
+
+
+.balance-back:hover {
+    color: #0f172a;
+}
+        
+
+        @media (max-width: 800px) {
+            .balance-page {
+                padding: 16px;
+            }
+
+            .balance-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+        .balance-filters {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 20px 0;
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.balance-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-width: 220px;
+}
+
+.balance-filter-group label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+.balance-filter-group input,
+.balance-filter-group select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 14px;
+}
+
+.balance-filter-group input:focus,
+.balance-filter-group select:focus {
+    outline: 2px solid #1764f5;
+    border-color: #1764f5;
+}
+
+#clearBalanceFilters {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    background: #1764f5;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#clearBalanceFilters:hover {
+    background: #0f50d8;
+}
+
+.balance-no-results {
+    display: none;
+    padding: 24px;
+    text-align: center;
+    color: #6b7280;
+}
+    </style>
+</head>
+
+<body>
+    <main class="balance-page">
+
+        <a class="balance-back"
+   href="{{ url_for('school_fees') }}">
+    <span>←</span> Back to School Fees
+</a>
+
+        <header class="balance-heading">
+            <h1>Student Fee Balances</h1>
+            <p>
+                View each student's fees, payments, and outstanding balance.
+            </p>
+        </header>
+
+        <section class="balance-cards">
+
+            <article class="balance-card">
+                <span>Total Fees Due</span>
+                <strong>
+                    GH₵ {{ "%.2f"|format(total_due) }}
+                </strong>
+            </article>
+
+            <article class="balance-card">
+                <span>Total Payments Received</span>
+                <strong>
+                    GH₵ {{ "%.2f"|format(total_paid) }}
+                </strong>
+            </article>
+
+            <article class="balance-card">
+                <span>Total Outstanding</span>
+                <strong>
+                    GH₵ {{ "%.2f"|format(total_balance) }}
+                </strong>
+            </article>
+
+        </section>
+<div class="balance-filters">
+
+    <div class="balance-filter-group">
+        <label for="balanceSearch">Search Student</label>
+        <input
+            type="text"
+            id="balanceSearch"
+            placeholder="Enter student name or ID..."
+        >
+    </div>
+
+    <div class="balance-filter-group">
+        <label for="balanceStatusFilter">Payment Status</label>
+        <select id="balanceStatusFilter">
+            <option value="">All Statuses</option>
+            <option value="paid">Paid</option>
+            <option value="partial">Partially Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="none">No Fees Assigned</option>
+        </select>
+    </div>
+
+    <button type="button" id="clearBalanceFilters">
+        Clear Filters
+    </button>
+
+</div>
+        <section class="balance-table-wrap">
+
+            <table class="balance-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Total Fees</th>
+                        <th>Total Paid</th>
+                        <th>Outstanding</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for student in students %}
+<tr
+    class="balance-student-row"
+    data-name="{{ student.student_name|lower }}"
+    data-id="{{ student.student_id }}"
+    data-status="{{ student.status|lower }}"
+>
+                        <td>
+                            <strong>
+                                {{ student.student_name }}
+                            </strong>
+                            <br>
+                            <small>
+                                Student ID: {{ student.student_id }}
+                            </small>
+                        </td>
+
+                        <td>
+                            GH₵ {{ "%.2f"|format(student.total_due) }}
+                        </td>
+
+                        <td>
+                            GH₵ {{ "%.2f"|format(student.total_paid) }}
+                        </td>
+
+                        <td>
+                            <strong>
+                                GH₵ {{ "%.2f"|format(student.balance) }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            {% if student.status == "Paid" %}
+                                <span class="balance-status status-paid">
+                                    Paid
+                                </span>
+                            {% elif student.status == "Partial" %}
+                                <span class="balance-status status-partial">
+                                    Partially Paid
+                                </span>
+                            {% elif student.status == "Unpaid" %}
+                                <span class="balance-status status-unpaid">
+                                    Unpaid
+                                </span>
+                            {% else %}
+                                <span class="balance-status status-none">
+                                    No Fees Assigned
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="balance-empty">
+                            No students found. Register students to begin.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </section>
+
+    </main>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("balanceSearch");
+    const statusFilter = document.getElementById("balanceStatusFilter");
+    const clearButton = document.getElementById("clearBalanceFilters");
+
+    const rows = document.querySelectorAll(".balance-student-row");
+    const tableBody = document.querySelector(".balance-table tbody");
+
+    if (!searchInput || !statusFilter || !clearButton || !tableBody) {
+        return;
+    }
+
+    const noResultsRow = document.createElement("tr");
+    noResultsRow.className = "balance-no-results";
+    noResultsRow.innerHTML =
+        '<td colspan="5">No students match your search or selected filter.</td>';
+
+    tableBody.appendChild(noResultsRow);
+
+    function filterStudents() {
+        const searchText = searchInput.value.trim().toLowerCase();
+        const selectedStatus = statusFilter.value;
+
+        let visibleCount = 0;
+
+        rows.forEach(function (row) {
+            const studentName = row.dataset.name || "";
+            const studentId = row.dataset.id || "";
+            const studentStatus = row.dataset.status || "";
+
+            const matchesSearch =
+                studentName.includes(searchText) ||
+                studentId.toLowerCase().includes(searchText);
+
+            const matchesStatus =
+                selectedStatus === "" ||
+                studentStatus === selectedStatus;
+
+            const shouldShow = matchesSearch && matchesStatus;
+
+            row.style.display = shouldShow ? "" : "none";
+
+            if (shouldShow) {
+                visibleCount++;
+            }
+        });
+
+        noResultsRow.style.display =
+            visibleCount === 0 ? "table-row" : "none";
+    }
+
+    searchInput.addEventListener("input", filterStudents);
+    statusFilter.addEventListener("change", filterStudents);
+
+    clearButton.addEventListener("click", function () {
+        searchInput.value = "";
+        statusFilter.value = "";
+        filterStudents();
+    });
+
+    filterStudents();
+});
+</script>S
+</body>
+</html>

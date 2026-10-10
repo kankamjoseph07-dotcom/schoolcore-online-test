@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | School Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="login-layout">
+        <section class="welcome-panel">
+            <div class="brand">
+                <div class="brand-icon">S</div>
+                <span>SCHOOL<span class="brand-light">CORE</span></span>
+            </div>
+
+            <div class="welcome-content">
+                <span class="eyebrow">SCHOOL ADMINISTRATION PLATFORM</span>
+                <h1>Manage your school.<br>Shape the future.</h1>
+                <p>
+                    A smarter way to manage students, teachers,
+                    attendance, examinations and school finances
+                    from one secure platform.
+                </p>
+                <div class="feature-list">
+                    <div>✓ &nbsp; Student and staff management</div>
+                    <div>✓ &nbsp; Academic performance tracking</div>
+                    <div>✓ &nbsp; Attendance and fee records</div>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                SCHOOLCORE MANAGEMENT SYSTEM
+            </div>
+        </section>
+
+        <section class="form-panel">
+            <div class="login-form">
+                <div class="mobile-brand">SCHOOLCORE</div>
+
+                <span class="eyebrow">WELCOME BACK</span>
+                <h2>Sign in to your account</h2>
+                <p class="subtitle">
+                    Enter your credentials to access your dashboard.
+                </p>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('login') }}">
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter your username"
+                        autocomplete="username"
+                        required
+                    >
+
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                    <button type="submit">Sign In <span>→</span></button>
+                </form>
+
+                <p class="security-note">
+                    Your school workspace, all in one place.
+                </p>
+            </div>
+
+            <footer class="form-footer">
+                © 2026 SchoolCore. School administration made simple.
+            </footer>
+        </section>
+    </main>
+</body>
+</html>

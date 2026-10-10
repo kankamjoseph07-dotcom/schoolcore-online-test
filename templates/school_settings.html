@@ -1,0 +1,411 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Settings | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .sc-settings-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 28px;
+        }
+
+        .sc-settings-intro {
+            margin-bottom: 25px;
+        }
+
+        .sc-settings-intro h2 {
+            margin: 0 0 8px;
+        }
+
+        .sc-settings-intro p {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .sc-settings-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 28px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+        }
+
+        .sc-settings-card-heading {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+        }
+
+        .sc-settings-card-heading h3 {
+            margin: 0 0 6px;
+        }
+
+        .sc-settings-card-heading p {
+            color: #64748b;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .sc-settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .sc-settings-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .sc-settings-field.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .sc-settings-field label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .sc-settings-field input,
+        .sc-settings-field textarea,
+        .sc-settings-field select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            color: #0f172a;
+            font: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .sc-settings-field input:focus,
+        .sc-settings-field textarea:focus,
+        .sc-settings-field select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .sc-settings-field textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .sc-settings-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+            padding-top: 22px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .sc-settings-save,
+        .sc-settings-cancel {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .sc-settings-save {
+            color: #fff;
+            background: #2563eb;
+        }
+
+        .sc-settings-save:hover {
+            background: #1d4ed8;
+        }
+
+        .sc-settings-cancel {
+            color: #334155;
+            background: #f1f5f9;
+        }
+
+        .sc-settings-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .sc-settings-notice {
+            margin-bottom: 20px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        @media (max-width: 700px) {
+            .sc-settings-content {
+                padding: 18px;
+            }
+
+            .sc-settings-card {
+                padding: 20px;
+            }
+
+            .sc-settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sc-settings-field.full-width {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body class="sc-dashboard">
+
+    <aside class="sc-sidebar">
+
+        <a href="{{ url_for('dashboard') }}" class="sc-brand">
+            <span class="sc-brand-icon">S</span>
+            <span>
+                School<span class="sc-brand-light">Core</span>
+                <small>MANAGEMENT SYSTEM</small>
+            </span>
+        </a>
+
+        <div class="sc-menu-label">MAIN MENU</div>
+
+        <a href="{{ url_for('dashboard') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▦</span> Dashboard
+        </a>
+
+        <a href="{{ url_for('students') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">♙</span> Students
+        </a>
+
+        <a href="{{ url_for('teachers') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▤</span> Teachers
+        </a>
+
+        <a href="{{ url_for('classes') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▧</span> Classes
+        </a>
+
+        <a href="{{ url_for('subjects') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▣</span> Subjects
+        </a>
+
+        <a href="{{ url_for('attendance') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">✓</span> Attendance
+        </a>
+
+        <a href="{{ url_for('attendance_reports') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▤</span> Attendance Reports
+        </a>
+
+        <a href="{{ url_for('school_fees') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">💰</span> School Fees
+        </a>
+
+        <a href="{{ url_for('fee_balances') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">💳</span> Student Fee Balances
+        </a>
+
+        <a href="{{ url_for('results') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▥</span> Results Entry
+        </a>
+
+        <a href="{{ url_for('results_reports') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▤</span> Results Reports
+        </a>
+
+        <a href="{{ url_for('fee_payment_history') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">💳</span> Student Fee Payment History
+        </a>
+
+        <a href="{{ url_for('financial_dashboard') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">📊</span> Financial Dashboard
+        </a>
+
+        <a href="{{ url_for('school_settings') }}"
+           class="sc-nav-link active">
+            <span class="sc-nav-icon">⚙</span> School Settings
+        </a>
+
+        <div class="sc-sidebar-bottom">
+
+            <div class="sc-help-card">
+                <div class="sc-help-icon">?</div>
+                <strong>Need assistance?</strong>
+                <p>School administration made simple.</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="sc-logout">
+                    <span>⇥</span> Sign out
+                </button>
+            </form>
+
+        </div>
+
+    </aside>
+
+    <main class="sc-main">
+
+        <header class="sc-topbar">
+            <div>
+                <div class="sc-breadcrumb">
+                    Workspace / <strong>School Settings</strong>
+                </div>
+                <h1>School Settings</h1>
+            </div>
+
+            <div class="sc-admin">
+                <div class="sc-admin-avatar">A</div>
+                <div>
+                    <strong>Administrator</strong>
+                    <small>School Admin</small>
+                </div>
+            </div>
+        </header>
+
+        <section class="sc-settings-content">
+
+            <div class="sc-settings-intro">
+                <h2>School Information</h2>
+                <p>Manage your school's official details and academic information.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="sc-settings-notice">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <section class="sc-settings-card">
+
+                <div class="sc-settings-card-heading">
+                    <h3>General Information</h3>
+                    <p>These details can be used on school receipts and statements.</p>
+                </div>
+
+                <form method="POST">
+
+                    <div class="sc-settings-grid">
+
+                        <div class="sc-settings-field full-width">
+                            <label for="school_name">School Name *</label>
+                            <input
+                                type="text"
+                                id="school_name"
+                                name="school_name"
+                                value="{{ settings['school_name'] }}"
+                                placeholder="Enter school name"
+                                required>
+                        </div>
+
+                        <div class="sc-settings-field full-width">
+                            <label for="school_address">School Address</label>
+                            <textarea
+                                id="school_address"
+                                name="school_address"
+                                placeholder="Enter the school's address">{{ settings['school_address'] }}</textarea>
+                        </div>
+
+                        <div class="sc-settings-field">
+                            <label for="school_phone">Phone Number</label>
+                            <input
+                                type="tel"
+                                id="school_phone"
+                                name="school_phone"
+                                value="{{ settings['school_phone'] }}"
+                                placeholder="Enter phone number">
+                        </div>
+
+                        <div class="sc-settings-field">
+                            <label for="school_email">Email Address</label>
+                            <input
+                                type="email"
+                                id="school_email"
+                                name="school_email"
+                                value="{{ settings['school_email'] }}"
+                                placeholder="Enter email address">
+                        </div>
+
+                        <div class="sc-settings-field">
+                            <label for="academic_year">Academic Year</label>
+                            <input
+                                type="text"
+                                id="academic_year"
+                                name="academic_year"
+                                value="{{ settings['academic_year'] }}"
+                                placeholder="e.g. 2026/2027">
+                        </div>
+
+                        <div class="sc-settings-field">
+                            <label for="current_term">Current Term</label>
+                            <select id="current_term" name="current_term">
+                                <option value="">Select current term</option>
+
+                                <option value="First Term"
+                                    {% if settings['current_term'] == 'First Term' %}selected{% endif %}>
+                                    First Term
+                                </option>
+
+                                <option value="Second Term"
+                                    {% if settings['current_term'] == 'Second Term' %}selected{% endif %}>
+                                    Second Term
+                                </option>
+
+                                <option value="Third Term"
+                                    {% if settings['current_term'] == 'Third Term' %}selected{% endif %}>
+                                    Third Term
+                                </option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="sc-settings-actions">
+                        <button type="submit" class="sc-settings-save">
+                            Save Settings
+                        </button>
+
+                        <a href="{{ url_for('dashboard') }}"
+                           class="sc-settings-cancel">
+                            Back to Dashboard
+                        </a>
+                    </div>
+
+                </form>
+
+            </section>
+
+        </section>
+
+        <footer class="sc-footer">
+            <span>© SchoolCore Management System</span>
+            <span>Simple tools for better school administration</span>
+        </footer>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,362 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fee Payment History | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .history-page {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .history-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .history-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .history-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .history-card p {
+            margin: 0 0 10px;
+            color: #64748b;
+        }
+
+        .history-card h2 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        .history-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .history-tools input,
+        .history-tools select {
+            padding: 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            min-width: 200px;
+        }
+
+        .history-table-wrap {
+            overflow-x: auto;
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1150px;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .history-table th {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .history-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+        }
+
+        .history-back,
+        .receipt-link {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 7px;
+            background: #1d4ed8;
+            color: #fff;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .history-back:hover,
+        .receipt-link:hover {
+            background: #1e40af;
+        }
+
+        .receipt-link {
+            padding: 7px 10px;
+            white-space: nowrap;
+        }
+
+        .history-tools button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 7px;
+            background: #475569;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .history-tools button:hover {
+            background: #334155;
+        }
+
+        @media print {
+            .history-tools,
+            .history-header a,
+            .receipt-column,
+            #noSearchResults {
+                display: none !important;
+            }
+
+            .history-page {
+                margin: 0;
+                max-width: none;
+            }
+
+            .history-table {
+                min-width: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="history-page">
+
+        <header class="history-header">
+            <div>
+                <h1>Student Fee Payment History</h1>
+                <p>View and review all recorded school fee payments.</p>
+            </div>
+
+            <a class="history-back"
+               href="{{ url_for('school_fees') }}">
+                Back to School Fees
+            </a>
+        </header>
+
+        <section class="history-summary">
+            <div class="history-card">
+                <p>Total Payment Records</p>
+                <h2>{{ total_payments }}</h2>
+            </div>
+
+            <div class="history-card">
+                <p>Total Amount Collected</p>
+                <h2>GH₵ {{ "%.2f"|format(total_collected) }}</h2>
+            </div>
+        </section>
+
+        <section class="history-tools">
+            <input
+                type="search"
+                id="paymentSearch"
+                placeholder="Search student, ID, fee or reference..."
+                aria-label="Search payment history">
+
+            <select id="methodFilter" aria-label="Filter by payment method">
+                <option value="">All Payment Methods</option>
+                <option value="cash">Cash</option>
+                <option value="mobile money">Mobile Money</option>
+                <option value="bank transfer">Bank Transfer</option>
+                <option value="card">Card</option>
+            </select>
+
+            <input
+                type="date"
+                id="startDate"
+                aria-label="Filter payments from date"
+                title="Start date">
+
+            <input
+                type="date"
+                id="endDate"
+                aria-label="Filter payments to date"
+                title="End date">
+
+            <button type="button" onclick="window.print()">
+                Print History
+            </button>
+
+            <a class="history-back"
+               href="{{ url_for('export_fee_payment_history') }}">
+                Export to CSV
+            </a>
+        </section>
+
+        <div class="history-table-wrap">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Student</th>
+                        <th>Student ID</th>
+                        <th>Fee Name</th>
+                        <th>Academic Year</th>
+                        <th>Term</th>
+                        <th>Amount Paid</th>
+                        <th>Method</th>
+                        <th>Reference</th>
+                        <th class="receipt-column">Receipt</th>
+                    </tr>
+                </thead>
+
+                <tbody id="paymentTableBody">
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment["payment_date"] }}</td>
+
+                        <td>
+                            {{ payment["first_name"] }}
+                            {{ payment["last_name"] }}
+                        </td>
+
+                        <td>{{ payment["student_code"] or "—" }}</td>
+                        <td>{{ payment["fee_name"] }}</td>
+                        <td>{{ payment["academic_year"] }}</td>
+                        <td>{{ payment["term"] }}</td>
+
+                        <td>
+                            GH₵ {{ "%.2f"|format(payment["amount_paid"]) }}
+                        </td>
+
+                        <td>{{ payment["payment_method"] }}</td>
+                        <td>{{ payment["reference"] or "—" }}</td>
+
+                        <td class="receipt-column">
+                            <a class="receipt-link"
+                               <a href="{{ url_for('fee_payment_receipt_page', payment_id=payment['payment_id']) }}">
+    View Receipt
+</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="history-empty">
+                            No fee payments have been recorded yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p id="noSearchResults" class="history-empty" hidden>
+            No payments match your search.
+        </p>
+
+    </main>
+
+    <script>
+        const paymentSearch = document.getElementById("paymentSearch");
+        const methodFilter = document.getElementById("methodFilter");
+        const startDate = document.getElementById("startDate");
+        const endDate = document.getElementById("endDate");
+
+        const paymentRows = Array.from(
+            document.querySelectorAll("#paymentTableBody tr")
+        );
+
+        const noSearchResults =
+            document.getElementById("noSearchResults");
+
+        function filterPayments() {
+            const searchText =
+                paymentSearch.value.toLowerCase().trim();
+
+            const selectedMethod =
+                methodFilter.value.toLowerCase();
+
+            const start = startDate.value;
+            const end = endDate.value;
+
+            let visibleCount = 0;
+
+            paymentRows.forEach(row => {
+                // Ignore the message row when no payments exist.
+                if (row.cells.length < 10) {
+                    row.hidden = true;
+                    return;
+                }
+
+                const rowText = row.innerText.toLowerCase();
+                const paymentDate = row.cells[0].innerText.trim();
+
+                const rowMethod =
+                    row.cells[7].innerText.toLowerCase().trim();
+
+                const matchesSearch =
+                    rowText.includes(searchText);
+
+                const matchesMethod =
+                    !selectedMethod ||
+                    rowMethod === selectedMethod;
+
+                const matchesStart =
+                    !start || paymentDate >= start;
+
+                const matchesEnd =
+                    !end || paymentDate <= end;
+
+                const showRow =
+                    matchesSearch &&
+                    matchesMethod &&
+                    matchesStart &&
+                    matchesEnd;
+
+                row.hidden = !showRow;
+
+                if (showRow) {
+                    visibleCount++;
+                }
+            });
+
+            noSearchResults.hidden = visibleCount > 0;
+        }
+
+        paymentSearch.addEventListener("input", filterPayments);
+        methodFilter.addEventListener("change", filterPayments);
+        startDate.addEventListener("change", filterPayments);
+        endDate.addEventListener("change", filterPayments);
+    </script>
+</body>
+</html>

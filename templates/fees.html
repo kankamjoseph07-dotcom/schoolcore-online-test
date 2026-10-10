@@ -1,0 +1,623 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Fees | SchoolCore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .fees-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 28px;
+        }
+
+        .fees-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .fees-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .fees-header p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .fees-back {
+            display: inline-block;
+            padding: 11px 18px;
+            border-radius: 8px;
+            background: #1e3a8a;
+            color: white;
+            text-decoration: none;
+        }
+
+        .fees-summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .fees-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+        }
+
+        .fees-card p {
+            color: #64748b;
+            margin: 0 0 10px;
+        }
+
+        .fees-card h2 {
+            margin: 0;
+            font-size: 25px;
+            overflow-wrap: anywhere;
+        }
+
+        .fees-forms {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+            margin-bottom: 28px;
+        }
+
+        .fees-panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            min-width: 0;
+        }
+
+        .fees-panel h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .fees-form-group {
+            margin-bottom: 16px;
+        }
+
+        .fees-form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+
+        .fees-form-group input,
+        .fees-form-group select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .fees-submit {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #1e40af;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .fees-submit:hover {
+            background: #1d4ed8;
+        }
+
+        .fees-table-panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 25px;
+        }
+
+        .fees-table-panel h2 {
+            margin-top: 0;
+        }
+
+        .fees-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .fees-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        .fees-table th,
+        .fees-table td {
+            text-align: left;
+            padding: 13px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .fees-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .fees-table td {
+            font-size: 14px;
+        }
+
+        .fees-status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .fees-paid {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .fees-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .fees-unpaid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .fees-message {
+            padding: 13px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+        }
+
+        .fees-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .fees-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .fees-empty {
+            padding: 25px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .receipt-link {
+            display: inline-block;
+            padding: 7px 11px;
+            border-radius: 6px;
+            background: #1e40af;
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .receipt-link:hover {
+            background: #1d4ed8;
+        }
+
+        @media (max-width: 850px) {
+            .fees-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .fees-forms {
+                grid-template-columns: 1fr;
+            }
+
+            .fees-page {
+                padding: 15px;
+            }
+        }
+        
+.fees-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+    align-items: center;
+}
+
+.fees-filters input,
+.fees-filters select {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background: #fff;
+    font-size: 14px;
+}
+
+.fees-filters button {
+    padding: 11px 15px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.fees-filters a {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+    </style>
+</head>
+
+<body>
+    <main class="fees-page">
+
+        <header class="fees-header">
+            <div>
+                <h1>School Fees Management</h1>
+                <p>Assign fees, record payments, and monitor student balances.</p>
+            </div>
+
+            <a class="fees-back" href="{{ url_for('dashboard') }}">
+                Back to Dashboard
+            </a>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="fees-message {{ 'fees-success' if category == 'success' else 'fees-error' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- FEE SUMMARY -->
+        <section class="fees-summary">
+            <div class="fees-card">
+                <p>Total Fees Assigned</p>
+                <h2>{{ "%.2f"|format(total_due) }}</h2>
+            </div>
+
+            <div class="fees-card">
+                <p>Total Payments Received</p>
+                <h2>{{ "%.2f"|format(total_paid) }}</h2>
+            </div>
+
+            <div class="fees-card">
+                <p>Total Outstanding Balance</p>
+                <h2>{{ "%.2f"|format(total_balance) }}</h2>
+            </div>
+        </section>
+
+        <!-- ASSIGN FEES AND RECORD PAYMENTS -->
+        <section class="fees-forms">
+
+            <div class="fees-panel">
+                <h2>Assign Fees to Student</h2>
+
+                <form method="POST" action="{{ url_for('save_school_fee') }}">
+
+                    <div class="fees-form-group">
+                        <label for="student_id">Select Student</label>
+                        <select id="student_id" name="student_id" required>
+                            <option value="">-- Select a student --</option>
+
+                            {% for student in students %}
+                                <option value="{{ student.id }}">
+                                    {{ student.display_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="fees-form-group">
+                        <label for="fee_name">Fee Name</label>
+                        <input
+                            type="text"
+                            id="fee_name"
+                            name="fee_name"
+                            placeholder="e.g. Tuition Fee"
+                            required
+                        >
+                    </div>
+
+                    <div class="fees-form-group">
+                        <label for="amount_due">Amount Due</label>
+                        <input
+                            type="number"
+                            id="amount_due"
+                            name="amount_due"
+                            min="0.01"
+                            step="0.01"
+                            placeholder="Enter amount"
+                            required
+                        >
+                    </div>
+
+                    <div class="fees-form-group">
+                        <label for="academic_year">Academic Year</label>
+                        <input
+                            type="text"
+                            id="academic_year"
+                            name="academic_year"
+                            placeholder="e.g. 2026/2027"
+                            required
+                        >
+                    </div>
+
+                    <div class="fees-form-group">
+                        <label for="term">Term</label>
+                        <select id="term" name="term" required>
+                            <option value="">-- Select term --</option>
+                            <option value="First Term">First Term</option>
+                            <option value="Second Term">Second Term</option>
+                            <option value="Third Term">Third Term</option>
+                        </select>
+                    </div>
+
+                    <button class="fees-submit" type="submit">
+                        Assign Fee
+                    </button>
+                </form>
+            </div>
+
+            <div class="fees-panel">
+                <h2>Record Student Payment</h2>
+
+                <form method="POST" action="{{ url_for('record_fee_payment') }}">
+
+                    <div class="fees-form-group">
+                        <label for="fee_id">Select Fee Record</label>
+                        <select id="fee_id" name="fee_id" required>
+                            <option value="">-- Select a fee record --</option>
+
+                            {% for fee in fees %}
+                                {% if fee.balance > 0 %}
+                                    <option value="{{ fee.id }}">
+                                        {{ fee.student_name }} |
+                                        {{ fee.fee_name }} |
+                                        Balance: {{ "%.2f"|format(fee.balance) }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="fees-form-group">
+                        <label for="amount_paid">Amount Paid</label>
+                        <input
+                            type="number"
+                            id="amount_paid"
+                            name="amount_paid"
+                            min="0.01"
+                            step="0.01"
+                            placeholder="Enter payment amount"
+                            required
+                        >
+                    </div>
+
+                    <div class="fees-form-group">
+                        <label for="payment_method">Payment Method</label>
+                        <select id="payment_method" name="payment_method" required>
+                            <option value="Cash">Cash</option>
+                            <option value="Mobile Money">Mobile Money</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Cheque">Cheque</option>
+                        </select>
+                    </div>
+
+                    <div class="fees-form-group">
+                        <label for="reference">Transaction Reference (optional)</label>
+                        <input
+                            type="text"
+                            id="reference"
+                            name="reference"
+                            placeholder="Receipt or transaction number"
+                        >
+                    </div>
+
+                    <div class="fees-form-group">
+                        <label for="payment_date">Payment Date</label>
+                        <input
+                            type="date"
+                            id="payment_date"
+                            name="payment_date"
+                            required
+                        >
+                    </div>
+
+                    <button class="fees-submit" type="submit">
+                        Record Payment
+                    </button>
+                </form>
+            </div>
+
+        </section>
+
+        <!-- STUDENT FEE RECORDS -->
+         
+<form method="GET" action="{{ url_for('school_fees') }}" class="fees-filters">
+    <input
+        type="text"
+        name="search"
+        placeholder="Search student or fee name..."
+        value="{{ request.args.get('search', '') }}"
+    >
+
+    <input
+        type="text"
+        name="academic_year"
+        placeholder="Academic year (e.g. 2026/2027)"
+        value="{{ request.args.get('academic_year', '') }}"
+    >
+
+    <select name="term">
+        <option value="">All Terms</option>
+        <option value="First Term"
+            {% if request.args.get('term') == 'First Term' %}selected{% endif %}>
+            First Term
+        </option>
+        <option value="Second Term"
+            {% if request.args.get('term') == 'Second Term' %}selected{% endif %}>
+            Second Term
+        </option>
+        <option value="Third Term"
+            {% if request.args.get('term') == 'Third Term' %}selected{% endif %}>
+            Third Term
+        </option>
+    </select>
+
+    <select name="status">
+        <option value="">All Payment Statuses</option>
+        <option value="paid"
+            {% if request.args.get('status') == 'paid' %}selected{% endif %}>
+            Fully Paid
+        </option>
+        <option value="outstanding"
+            {% if request.args.get('status') == 'outstanding' %}selected{% endif %}>
+            Outstanding
+        </option>
+    </select>
+
+    <button type="submit">Apply Filters</button>
+    <a href="{{ url_for('school_fees') }}">Clear Filters</a>
+</form>
+
+
+        <section class="fees-table-panel">
+            <h2>Student Fee Records</h2>
+
+            <div class="fees-table-wrap">
+                <table class="fees-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Fee Name</th>
+                            <th>Academic Year</th>
+                            <th>Term</th>
+                            <th>Amount Due</th>
+                            <th>Amount Paid</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for fee in fees %}
+                            <tr>
+                                <td>{{ fee.student_name }}</td>
+                                <td>{{ fee.fee_name }}</td>
+                                <td>{{ fee.academic_year }}</td>
+                                <td>{{ fee.term }}</td>
+                                <td>{{ "%.2f"|format(fee.amount_due) }}</td>
+                                <td>{{ "%.2f"|format(fee.amount_paid) }}</td>
+                                <td>{{ "%.2f"|format(fee.balance) }}</td>
+                                <td>
+                                    {% if fee.balance <= 0 %}
+                                        <span class="fees-status fees-paid">Paid</span>
+                                    {% elif fee.amount_paid > 0 %}
+                                        <span class="fees-status fees-partial">Part Payment</span>
+                                    {% else %}
+                                        <span class="fees-status fees-unpaid">Unpaid</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="fees-empty">
+                                    No fee records yet. Assign fees to students to get started.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- PAYMENT HISTORY WITH PRINT RECEIPT LINKS -->
+        <section class="fees-table-panel">
+            <h2>Payment History</h2>
+
+            <div class="fees-table-wrap">
+                <table class="fees-table">
+                    <thead>
+                        <tr>
+                            <th>Payment Date</th>
+                            <th>Student</th>
+                            <th>Fee</th>
+                            <th>Academic Year</th>
+                            <th>Term</th>
+                            <th>Amount Paid</th>
+                            <th>Method</th>
+                            <th>Reference</th>
+                            <th>Receipt</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for payment in payments %}
+                            <tr>
+                                <td>{{ payment.payment_date }}</td>
+                                <td>{{ payment.student_name }}</td>
+                                <td>{{ payment.fee_name }}</td>
+                                <td>{{ payment.academic_year }}</td>
+                                <td>{{ payment.term }}</td>
+                                <td>{{ "%.2f"|format(payment.amount_paid) }}</td>
+                                <td>{{ payment.payment_method }}</td>
+                                <td>{{ payment.reference or "-" }}</td>
+                                <td>
+                                    <a
+                                        class="receipt-link"
+                                        href="{{ url_for('fee_payment_receipt', payment_id=payment.id) }}"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >
+                                        View Receipt
+                                    </a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="fees-empty">
+                                    No payments have been recorded yet.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+</body>
+</html>

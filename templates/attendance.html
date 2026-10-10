@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Attendance | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 720px;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .attendance-table th {
+            background: #f8fafc;
+            color: #334155;
+            font-size: 13px;
+        }
+
+        .attendance-table select,
+        .attendance-table input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        .attendance-table select:focus,
+        .attendance-table input:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #3b82f6;
+        }
+
+        .attendance-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .attendance-summary span {
+            padding: 9px 14px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .attendance-help {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+
+<body class="dashboard-body students-page">
+
+    <main class="form-page">
+
+        <header class="form-page-header">
+            <div>
+                <span class="eyebrow">STUDENT MANAGEMENT</span>
+                <h1>Attendance Management</h1>
+                <p>Record and manage daily student attendance.</p>
+            </div>
+
+            <a class="secondary-button"
+               href="{{ url_for('dashboard') }}">
+                ← Back to Dashboard
+            </a>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <section class="student-form">
+
+            <div class="form-section-title">
+                <span class="section-number">01</span>
+                <div>
+                    <h2>Select Class and Date</h2>
+                    <p>Choose which class and date you want to record.</p>
+                </div>
+            </div>
+
+            <form method="GET" action="{{ url_for('attendance') }}">
+                <div class="input-grid">
+
+                    <div class="field">
+                        <label for="class_name">Class *</label>
+
+                        <select id="class_name"
+                                name="class_name"
+                                required>
+                            <option value="">Select class</option>
+
+                            {% for school_class in classes %}
+                                <option
+                                    value="{{ school_class['class_name'] }}"
+                                    {% if selected_class == school_class['class_name'] %}
+                                        selected
+                                    {% endif %}>
+                                    {{ school_class['class_name'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="attendance_date">Attendance Date *</label>
+
+                        <input type="date"
+                               id="attendance_date"
+                               name="attendance_date"
+                               value="{{ attendance_date }}"
+                               required>
+                    </div>
+
+                </div>
+
+                <div class="form-actions">
+                    <button class="primary-button" type="submit">
+                        Load Students
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        {% if selected_class %}
+
+            <section class="student-form" style="margin-top: 24px;">
+
+                <div class="form-section-title">
+                    <span class="section-number">02</span>
+                    <div>
+                        <h2>{{ selected_class }} Attendance</h2>
+                        <p>
+                            Date: {{ attendance_date }}
+                            · Students: {{ students|length }}
+                        </p>
+                    </div>
+                </div>
+
+                {% if students %}
+
+                    <form method="POST"
+                          action="{{ url_for('save_attendance') }}">
+
+                        <input type="hidden"
+                               name="class_name"
+                               value="{{ selected_class }}">
+
+                        <input type="hidden"
+                               name="attendance_date"
+                               value="{{ attendance_date }}">
+
+                        <div class="attendance-summary">
+                            <span>Choose a status for every student.</span>
+                            <span>Present</span>
+                            <span>Absent</span>
+                            <span>Late</span>
+                            <span>Excused</span>
+                        </div>
+
+                        <div style="overflow-x: auto;">
+                            <table class="attendance-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Student Name</th>
+                                        <th>Attendance Status</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for student in students %}
+                                        <tr>
+                                            <td>
+                                                {{ student['student_code'] }}
+                                            </td>
+
+                                            <td>
+                                                <strong>
+                                                    {{ student['first_name'] }}
+                                                    {{ student['last_name'] }}
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                <select
+                                                    name="status_{{ student['id'] }}"
+                                                    aria-label="Attendance status for {{ student['first_name'] }} {{ student['last_name'] }}"
+                                                    required>
+                                                    <option value="Present">
+                                                        Present
+                                                    </option>
+                                                    <option value="Absent">
+                                                        Absent
+                                                    </option>
+                                                    <option value="Late">
+                                                        Late
+                                                    </option>
+                                                    <option value="Excused">
+                                                        Excused
+                                                    </option>
+                                                </select>
+                                            </td>
+
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    name="remarks_{{ student['id'] }}"
+                                                    maxlength="250"
+                                                    placeholder="Optional remarks">
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p class="attendance-help">
+                            Check each student's status before saving.
+                            Saving again for the same date updates the existing
+                            attendance records.
+                        </p>
+
+                        <div class="form-actions">
+                            <button class="primary-button" type="submit">
+                                Save Attendance
+                            </button>
+                        </div>
+
+                    </form>
+
+                {% else %}
+
+                    <p>
+                        No students were found in this class.
+                        Register students in this class first.
+                    </p>
+
+                {% endif %}
+
+            </section>
+
+        {% endif %}
+
+    </main>
+
+</body>
+

@@ -1,0 +1,232 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt | SchoolCore</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f1f5f9;
+            color: #1e293b;
+            font-family: Arial, sans-serif;
+        }
+
+        .receipt {
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 35px;
+            background: white;
+            border: 1px solid #dbe3ee;
+            border-radius: 12px;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid #1e40af;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .receipt-header h1 {
+            margin: 0 0 8px;
+            color: #1e40af;
+        }
+
+        .receipt-header p {
+            margin: 5px 0;
+            color: #64748b;
+        }
+
+        .receipt-number {
+            text-align: right;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .receipt h2 {
+            font-size: 17px;
+            margin-top: 25px;
+            color: #1e40af;
+        }
+
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .receipt-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        .receipt-table td:first-child {
+            width: 42%;
+            color: #64748b;
+        }
+
+        .receipt-total {
+            margin-top: 25px;
+            padding: 18px;
+            background: #eff6ff;
+            border-radius: 8px;
+        }
+
+        .receipt-total p {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 8px 0;
+        }
+
+        .receipt-total .paid {
+            font-size: 22px;
+            font-weight: bold;
+            color: #166534;
+        }
+
+        .receipt-footer {
+            margin-top: 35px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .receipt-actions {
+            max-width: 750px;
+            margin: 20px auto 0;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .receipt-actions button,
+        .receipt-actions a {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 7px;
+            background: #1e40af;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .receipt-actions a {
+            background: #475569;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .receipt {
+                max-width: none;
+                border: none;
+                border-radius: 0;
+                padding: 10px;
+            }
+
+            .receipt-actions {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="receipt">
+
+        <header class="receipt-header">
+            <h1>SchoolCore</h1>
+            <p>OFFICIAL SCHOOL FEE PAYMENT RECEIPT</p>
+            <p>Keep this receipt for your records.</p>
+        </header>
+
+        <div class="receipt-number">
+            Receipt No: SC-{{ "%06d"|format(payment.payment_id) }}
+        </div>
+
+        <h2>Student Information</h2>
+
+        <table class="receipt-table">
+            <tr>
+                <td>Student Name</td>
+                <td><strong>{{ student_name }}</strong></td>
+            </tr>
+            <tr>
+                <td>Student ID</td>
+                <td>{{ payment.student_id }}</td>
+            </tr>
+            <tr>
+                <td>Academic Year</td>
+                <td>{{ payment.academic_year }}</td>
+            </tr>
+            <tr>
+                <td>Term</td>
+                <td>{{ payment.term }}</td>
+            </tr>
+        </table>
+
+        <h2>Payment Information</h2>
+
+        <table class="receipt-table">
+            <tr>
+                <td>Fee Description</td>
+                <td>{{ payment.fee_name }}</td>
+            </tr>
+            <tr>
+                <td>Payment Date</td>
+                <td>{{ payment.payment_date }}</td>
+            </tr>
+            <tr>
+                <td>Payment Method</td>
+                <td>{{ payment.payment_method }}</td>
+            </tr>
+            <tr>
+                <td>Transaction Reference</td>
+                <td>{{ payment.reference or "N/A" }}</td>
+            </tr>
+        </table>
+
+        <div class="receipt-total">
+            <p>
+                <span>Total Fee</span>
+                <strong>{{ "%.2f"|format(payment.amount_due) }}</strong>
+            </p>
+
+            <p class="paid">
+                <span>Payment Received</span>
+                <span>{{ "%.2f"|format(payment.amount_paid) }}</span>
+            </p>
+
+            <p>
+                <span>Total Paid So Far</span>
+                <strong>{{ "%.2f"|format(payment.total_paid) }}</strong>
+            </p>
+
+            <p>
+                <span>Outstanding Balance</span>
+                <strong>{{ "%.2f"|format(balance) }}</strong>
+            </p>
+        </div>
+
+        <footer class="receipt-footer">
+            <p>This receipt was generated by SchoolCore.</p>
+            <p>Thank you for your payment.</p>
+        </footer>
+
+    </main>
+
+    <div class="receipt-actions">
+        <button onclick="window.print()">Print Receipt</button>
+        <a href="{{ url_for('school_fees') }}">Back to School Fees</a>
+    </div>
+</body>
+</html>

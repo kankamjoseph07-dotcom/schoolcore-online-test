@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classes Management | SchoolCore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dashboard-body students-page">
+
+    <aside class="sidebar">
+        <div class="dashboard-brand">
+            <span class="brand-icon">S</span>
+            <span>SCHOOLCORE</span>
+        </div>
+
+        <p class="nav-heading">MAIN MENU</p>
+
+        <a class="nav-link" href="{{ url_for('dashboard') }}">▦ &nbsp; Dashboard</a>
+        <a class="nav-link" href="{{ url_for('students') }}">♙ &nbsp; Students</a>
+        <a class="nav-link" href="{{ url_for('teachers') }}">♧ &nbsp; Teachers</a>
+        <a class="nav-link active" href="{{ url_for('classes') }}">▤ &nbsp; Classes</a>
+        <a class="nav-link" href="{{ url_for('subjects') }}">▣ &nbsp; Subjects</a>
+        <a class="nav-link" href="#" onclick="return false;">✓ &nbsp; Attendance</a>
+        <a class="nav-link" href="#" onclick="return false;">▣ &nbsp; Examinations & Results</a>
+        <a class="nav-link" href="#" onclick="return false;">₵ &nbsp; School Fees</a>
+
+        <div class="sidebar-bottom">
+            <div class="user-avatar">A</div>
+            <div class="user-details">
+                <strong>{{ session.username }}</strong>
+                <span>Administrator</span>
+            </div>
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button class="logout-button" type="submit" title="Sign out">↗</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+
+        <header class="dashboard-topbar">
+            <div>
+                <span class="eyebrow">SCHOOL ADMINISTRATION</span>
+                <h1>Classes Management</h1>
+            </div>
+            <a class="primary-button" href="{{ url_for('add_class') }}">
+                + Add New Class
+            </a>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <section class="student-summary">
+            <div>
+                <span class="summary-label">TOTAL REGISTERED CLASSES</span>
+                <h2>{{ total }}</h2>
+                <p>Classes currently registered in SchoolCore</p>
+            </div>
+            <div class="summary-icon">▤</div>
+        </section>
+
+        <section class="student-table-panel">
+
+            <div class="table-heading">
+                <div>
+                    <h2>Class Records</h2>
+                    <p>Manage class names, class teachers and classrooms.</p>
+                </div>
+
+                <form class="student-search" method="GET"
+                      action="{{ url_for('classes') }}">
+                    <input type="search"
+                           name="search"
+                           value="{{ search }}"
+                           placeholder="Search class, teacher or room..."
+                           aria-label="Search classes">
+                    <button type="submit">Search</button>
+
+                    {% if search %}
+                        <a href="{{ url_for('classes') }}">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="table-scroll">
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>CLASS NAME</th>
+                            <th>CLASS TEACHER</th>
+                            <th>CLASSROOM</th>
+                            <th>DATE CREATED</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for class_record in classes %}
+                            <tr>
+                                <td>
+                                    <span class="class-badge">
+                                        {{ class_record.class_name }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ class_record.class_teacher or 'Not assigned' }}
+                                </td>
+
+                                <td>
+                                    {{ class_record.room or 'Not assigned' }}
+                                </td>
+
+                                <td>{{ class_record.created_at }}</td>
+
+                                <td>
+                                    <div class="table-actions">
+                                        <a class="edit-action"
+                                           href="{{ url_for('edit_class', class_id=class_record.id) }}">
+                                            Edit
+                                        </a>
+
+                                        <form method="POST"
+                                              action="{{ url_for('delete_class', class_id=class_record.id) }}"
+                                              onsubmit="return confirm('Are you sure you want to delete this class?');">
+                                            <button class="delete-action" type="submit">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    <div class="empty-icon">▤</div>
+                                    <strong>No classes found</strong>
+
+                                    <p>
+                                        {% if search %}
+                                            Try another search term.
+                                        {% else %}
+                                            Add your first class to get started.
+                                        {% endif %}
+                                    </p>
+
+                                    {% if not search %}
+                                        <a class="primary-button"
+                                           href="{{ url_for('add_class') }}">
+                                            + Add First Class
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                Showing {{ classes|length }} record(s)
+                {% if search %} for "{{ search }}"{% endif %}
+            </div>
+
+        </section>
+    </main>
+
+</body>
+</html>

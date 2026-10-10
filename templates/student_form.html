@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit Student' if student else 'Register Student' }} | SchoolCore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dashboard-body">
+    <main class="form-page">
+        <header class="form-page-header">
+            <div>
+                <span class="eyebrow">STUDENT MANAGEMENT</span>
+                <h1>{{ 'Edit Student Details' if student else 'Register New Student' }}</h1>
+                <p>Enter accurate student and guardian information below.</p>
+            </div>
+            <a class="secondary-button" href="{{ url_for('students') }}">← Back to Students</a>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST"
+              action="{{ url_for('edit_student', student_id=student.id) if student else url_for('add_student') }}"
+              class="student-form">
+            {% if student %}
+            <div class="student-id-banner">
+                <span>STUDENT ID</span>
+                <strong>{{ student.student_code }}</strong>
+            </div>
+            {% endif %}
+
+            <div class="form-section-title">
+                <span class="section-number">01</span>
+                <div>
+                    <h2>Personal Information</h2>
+                    <p>Basic details about the student.</p>
+                </div>
+            </div>
+
+            <div class="input-grid">
+                <div class="field">
+                    <label for="first_name">First Name *</label>
+                    <input id="first_name" name="first_name" required maxlength="80"
+                           value="{{ student.first_name if student else '' }}"
+                           placeholder="Enter first name">
+                </div>
+
+                <div class="field">
+                    <label for="last_name">Last Name *</label>
+                    <input id="last_name" name="last_name" required maxlength="80"
+                           value="{{ student.last_name if student else '' }}"
+                           placeholder="Enter last name">
+                </div>
+
+                <div class="field">
+                    <label for="gender">Gender *</label>
+                    <select id="gender" name="gender" required>
+                        <option value="">Select gender</option>
+                        {% for option in ['Male', 'Female', 'Other'] %}
+                        <option value="{{ option }}"
+                            {% if student and student.gender == option %}selected{% endif %}>
+                            {{ option }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="date_of_birth">Date of Birth</label>
+                    <input type="date" id="date_of_birth" name="date_of_birth"
+                           value="{{ student.date_of_birth if student else '' }}">
+                </div>
+
+<div class="field">
+    <label for="class_name">Class *</label>
+
+    <select id="class_name" name="class_name" required>
+        <option value="">Select class</option>
+
+        {% for school_class in classes %}
+        <option value="{{ school_class['class_name'] }}"
+            {% if student and student.class_name == school_class['class_name'] %}selected{% endif %}>
+            {{ school_class['class_name'] }}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+
+
+            </div>
+
+            <div class="form-section-title second-section">
+                <span class="section-number">02</span>
+                <div>
+                    <h2>Parent / Guardian Information</h2>
+                    <p>Contact information for the student's guardian.</p>
+                </div>
+            </div>
+
+            <div class="input-grid">
+                <div class="field">
+                    <label for="guardian_name">Guardian's Full Name *</label>
+                    <input id="guardian_name" name="guardian_name" required maxlength="120"
+                           value="{{ student.guardian_name if student else '' }}"
+                           placeholder="Enter guardian's name">
+                </div>
+
+                <div class="field">
+                    <label for="guardian_phone">Guardian's Phone *</label>
+                    <input type="tel" id="guardian_phone" name="guardian_phone"
+                           required maxlength="30"
+                           value="{{ student.guardian_phone if student else '' }}"
+                           placeholder="e.g. 0241234567">
+                </div>
+
+                <div class="field full-width">
+                    <label for="address">Residential Address</label>
+                    <textarea id="address" name="address" rows="3"
+                              maxlength="300"
+                              placeholder="Enter residential address">{{ student.address if student else '' }}</textarea>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a class="secondary-button" href="{{ url_for('students') }}">Cancel</a>
+                <button class="primary-button" type="submit">
+                    {{ 'Save Changes' if student else 'Register Student' }}
+                </button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

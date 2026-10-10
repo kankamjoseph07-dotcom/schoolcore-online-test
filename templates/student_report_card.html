@@ -1,0 +1,572 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Report Card | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f1f5f9;
+            color: #1e293b;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .report-card {
+            max-width: 950px;
+            margin: 20px auto;
+            padding: 35px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .school-heading {
+            padding-bottom: 20px;
+            text-align: center;
+            border-bottom: 3px solid #17365d;
+        }
+
+        .school-heading h1 {
+            margin: 0 0 8px;
+            color: #17365d;
+            font-size: 30px;
+            overflow-wrap: anywhere;
+        }
+
+        .school-heading p {
+            margin: 5px 0;
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .report-title {
+            margin: 22px 0;
+            text-align: center;
+            color: #17365d;
+            font-size: 23px;
+            letter-spacing: 1px;
+        }
+
+        .term-label {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 7px 14px;
+            background: #eaf1fb;
+            border-radius: 20px;
+            color: #17365d;
+            font-size: 13px;
+            letter-spacing: 0;
+        }
+
+        .section-title {
+            margin: 25px 0 12px;
+            color: #17365d;
+            font-size: 17px;
+        }
+
+        .student-grid,
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .info-box,
+        .summary-box {
+            padding: 13px;
+            border: 1px solid #dbe3ee;
+            border-radius: 7px;
+            overflow-wrap: anywhere;
+        }
+
+        .info-box span,
+        .summary-box span {
+            display: block;
+            margin-bottom: 6px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .info-box strong {
+            color: #172b4d;
+            font-size: 14px;
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 11px 9px;
+            border: 1px solid #dbe3ee;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .results-table th {
+            background: #17365d;
+            color: #ffffff;
+        }
+
+        .results-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .results-table td.number {
+            text-align: center;
+        }
+
+        .summary-box {
+            background: #f8fafc;
+        }
+
+        .summary-box strong {
+            color: #17365d;
+            font-size: 21px;
+        }
+
+        .empty-message {
+            padding: 22px;
+            text-align: center !important;
+            color: #64748b;
+        }
+
+        .remarks-note {
+            margin-top: 25px;
+            padding: 15px;
+            border: 1px solid #dbe3ee;
+            border-radius: 7px;
+        }
+
+        .remarks-note strong {
+            color: #17365d;
+        }
+
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 45px;
+            margin-top: 55px;
+        }
+
+        .signature-line {
+            padding-top: 8px;
+            border-top: 1px solid #64748b;
+            text-align: center;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        .report-footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #dbe3ee;
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .report-actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px auto;
+        }
+
+        .term-selector {
+            max-width: 650px;
+            margin: 0 auto 25px;
+            padding: 18px;
+            background: #f8fafc;
+            border: 1px solid #dbe3ee;
+            border-radius: 8px;
+        }
+
+        .term-selector h3 {
+            margin-top: 0;
+            color: #17365d;
+        }
+
+        .selector-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .selector-fields label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .selector-fields select,
+        .selector-fields input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            background: #ffffff;
+            font-size: 14px;
+        }
+
+        .selector-submit {
+            margin-top: 14px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            background: #17365d;
+            color: white;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .selector-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .report-button {
+            display: inline-block;
+            padding: 11px 18px;
+            border: none;
+            border-radius: 6px;
+            background: #17365d;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .report-button:hover {
+            opacity: 0.88;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 8px;
+            }
+
+            .report-card {
+                margin: 5px auto;
+                padding: 16px;
+            }
+
+            .school-heading h1 {
+                font-size: 23px;
+            }
+
+            .student-grid,
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 8px;
+            }
+
+            .signature-grid {
+                gap: 20px;
+            }
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 12mm;
+            }
+
+            body {
+                padding: 0;
+                background: #ffffff;
+            }
+
+            .report-card {
+                max-width: none;
+                margin: 0;
+                padding: 0;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .table-wrap {
+                overflow: visible;
+            }
+
+            .results-table {
+                page-break-inside: auto;
+            }
+
+            .results-table tr {
+                page-break-inside: avoid;
+            }
+
+            .results-table th {
+                background: #17365d !important;
+                color: #ffffff !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .info-box,
+            .summary-box {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="report-card">
+
+    <header class="school-heading">
+        <h1>{{ settings["school_name"] or "SchoolCore" }}</h1>
+
+        {% if settings["school_address"] %}
+            <p>{{ settings["school_address"] }}</p>
+        {% endif %}
+
+        {% if settings["school_phone"] %}
+            <p>Phone: {{ settings["school_phone"] }}</p>
+        {% endif %}
+
+        {% if settings["school_email"] %}
+            <p>Email: {{ settings["school_email"] }}</p>
+        {% endif %}
+    </header>
+
+    <h2 class="report-title">
+        STUDENT ACADEMIC REPORT CARD
+        <br>
+        <span class="term-label">
+            {{ term }} — {{ academic_year }}
+        </span>
+    </h2>
+
+    <form method="GET"
+          action="{{ url_for('student_report_card', student_id=student['id']) }}"
+          class="term-selector no-print">
+
+        <h3>Select Report Period</h3>
+
+        <div class="selector-fields">
+            <div>
+                <label for="term">Academic Term</label>
+                <select id="term" name="term" required>
+                    <option value="First Term"
+                        {% if term == "First Term" %}selected{% endif %}>
+                        First Term
+                    </option>
+
+                    <option value="Second Term"
+                        {% if term == "Second Term" %}selected{% endif %}>
+                        Second Term
+                    </option>
+
+                    <option value="Third Term"
+                        {% if term == "Third Term" %}selected{% endif %}>
+                        Third Term
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label for="academic_year">Academic Year</label>
+                <input type="text"
+                       id="academic_year"
+                       name="academic_year"
+                       value="{{ academic_year }}"
+                       placeholder="e.g. 2026/2027"
+                       required>
+            </div>
+        </div>
+
+        <button type="submit" class="selector-submit">
+            View Selected Report
+        </button>
+
+    </form>
+
+    <h3 class="section-title">Student Information</h3>
+
+    <section class="student-grid">
+        <div class="info-box">
+            <span>Student Name</span>
+            <strong>{{ student["first_name"] }} {{ student["last_name"] }}</strong>
+        </div>
+
+        <div class="info-box">
+            <span>Student ID</span>
+            <strong>{{ student["student_code"] or "Not assigned" }}</strong>
+        </div>
+
+        <div class="info-box">
+            <span>Class</span>
+            <strong>{{ student["class_name"] or "Not assigned" }}</strong>
+        </div>
+
+        <div class="info-box">
+            <span>Guardian</span>
+            <strong>{{ student["guardian_name"] or "Not provided" }}</strong>
+        </div>
+
+        <div class="info-box">
+            <span>Academic Year</span>
+            <strong>{{ academic_year }}</strong>
+        </div>
+
+        <div class="info-box">
+            <span>Term</span>
+            <strong>{{ term }}</strong>
+        </div>
+    </section>
+
+    <h3 class="section-title">Academic Performance</h3>
+
+    <div class="table-wrap">
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Class Score / 30</th>
+                    <th>Exam Score / 70</th>
+                    <th>Total / 100</th>
+                    <th>Grade</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record["subject_name"] }}</td>
+                    <td class="number">
+                        {{ "%.2f"|format(record["class_score"] or 0) }}
+                    </td>
+                    <td class="number">
+                        {{ "%.2f"|format(record["exam_score"] or 0) }}
+                    </td>
+                    <td class="number">
+                        {{ "%.2f"|format(record["total_score"] or 0) }}
+                    </td>
+                    <td class="number">
+                        {{ record["grade"] or "-" }}
+                    </td>
+                    <td>{{ record["remarks"] or "-" }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="empty-message">
+                        No results have been entered for this student
+                        for the selected term and academic year.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h3 class="section-title">Performance Summary</h3>
+
+    <section class="summary-grid">
+        <div class="summary-box">
+            <span>Subjects Recorded</span>
+            <strong>{{ subject_count }}</strong>
+        </div>
+
+        <div class="summary-box">
+            <span>Total Marks</span>
+            <strong>{{ "%.2f"|format(total_score) }}</strong>
+        </div>
+
+        <div class="summary-box">
+            <span>Overall Average</span>
+            <strong>{{ "%.2f"|format(average_score) }}%</strong>
+        </div>
+
+        <div class="summary-box">
+            <span>Maximum Possible Marks</span>
+            <strong>{{ subject_count * 100 }}</strong>
+        </div>
+    </section>
+
+    <section class="remarks-note">
+        <strong>Class Teacher's General Remarks</strong>
+        <p>
+            Please review the subject remarks above and discuss the
+            student's progress with the class teacher.
+        </p>
+    </section>
+
+    <section class="signature-grid">
+        <div class="signature-line">
+            Class Teacher's Signature
+        </div>
+
+        <div class="signature-line">
+            Headteacher's Signature
+        </div>
+    </section>
+
+    <footer class="report-footer">
+        <p>
+            {% if settings["school_name"] %}
+                {{ settings["school_name"] }}
+            {% else %}
+                SchoolCore
+            {% endif %}
+            — Student Academic Report Card
+        </p>
+        <p>Keep this report for your records.</p>
+    </footer>
+
+</main>
+
+<div class="report-actions no-print">
+    <button type="button"
+            class="report-button"
+            onclick="window.print()">
+        Print Report Card
+    </button>
+
+    <a class="report-button"
+       href="{{ url_for('students') }}">
+        Back to Students
+    </a>
+
+    <a class="report-button"
+       href="{{ url_for('results_reports') }}">
+        Results Reports
+    </a>
+</div>
+
+</body>
+</html>

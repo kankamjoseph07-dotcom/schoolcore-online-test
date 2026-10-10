@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachers | SchoolCore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dashboard-body students-page">
+    <aside class="sidebar">
+        <div class="dashboard-brand">
+            <span class="brand-icon">S</span>
+            <span>SCHOOLCORE</span>
+        </div>
+
+        <p class="nav-heading">MAIN MENU</p>
+
+        <a class="nav-link" href="{{ url_for('dashboard') }}">▦ &nbsp; Dashboard</a>
+        <a class="nav-link" href="{{ url_for('students') }}">♙ &nbsp; Students</a>
+        <a class="nav-link active" href="{{ url_for('teachers') }}">♧ &nbsp; Teachers</a>
+        <a class="nav-link" href="{{ url_for('teachers') }}">▤ &nbsp; Classes & Subjects</a>
+        <a class="nav-link" href="{{ url_for('teachers') }}">✓ &nbsp; Attendance</a>
+        <a class="nav-link" href="{{ url_for('teachers') }}">▣ &nbsp; Examinations & Results</a>
+        <a class="nav-link" href="{{ url_for('teachers') }}">₵ &nbsp; School Fees</a>
+
+        <div class="sidebar-bottom">
+            <div class="user-avatar">A</div>
+            <div class="user-details">
+                <strong>{{ session.username }}</strong>
+                <span>Administrator</span>
+            </div>
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button class="logout-button" type="submit" title="Sign out">↗</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-topbar">
+            <div>
+                <span class="eyebrow">SCHOOL ADMINISTRATION</span>
+                <h1>Teacher Management</h1>
+            </div>
+            <a class="primary-button" href="{{ url_for('add_teacher') }}">
+                + Register Teacher
+            </a>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <section class="student-summary">
+            <div>
+                <span class="summary-label">TOTAL REGISTERED TEACHERS</span>
+                <h2>{{ total }}</h2>
+                <p>Teacher records in the school database</p>
+            </div>
+            <div class="summary-icon">♧</div>
+        </section>
+
+        <section class="student-table-panel">
+            <div class="table-heading">
+                <div>
+                    <h2>Teacher Records</h2>
+                    <p>Search and manage your teaching staff.</p>
+                </div>
+
+                <form class="student-search" method="GET"
+                      action="{{ url_for('teachers') }}">
+                    <input type="search"
+                           name="search"
+                           value="{{ search }}"
+                           placeholder="Search name, staff ID or subject..."
+                           aria-label="Search teachers">
+                    <button type="submit">Search</button>
+
+                    {% if search %}
+                        <a href="{{ url_for('teachers') }}">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="table-scroll">
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>STAFF ID</th>
+                            <th>TEACHER NAME</th>
+                            <th>GENDER</th>
+                            <th>PHONE</th>
+                            <th>EMAIL</th>
+                            <th>SUBJECT</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for teacher in teachers %}
+                        <tr>
+                            <td>
+                                <span class="student-code">
+                                    {{ teacher.staff_code }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong>{{ teacher.first_name }} {{ teacher.last_name }}</strong>
+                            </td>
+                            <td>{{ teacher.gender }}</td>
+                            <td>{{ teacher.phone }}</td>
+                            <td>{{ teacher.email or '—' }}</td>
+                            <td>
+                                <span class="class-badge">
+                                    {{ teacher.subject or 'Not assigned' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <a class="edit-action"
+                                       href="{{ url_for('edit_teacher', teacher_id=teacher.id) }}">
+                                        Edit
+                                    </a>
+
+                                    <form method="POST"
+                                          action="{{ url_for('delete_teacher', teacher_id=teacher.id) }}"
+                                          onsubmit="return confirm('Are you sure you want to delete this teacher?');">
+                                        <button class="delete-action" type="submit">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <div class="empty-icon">♧</div>
+                                <strong>No teachers found</strong>
+                                <p>
+                                    {% if search %}
+                                        Try a different search term.
+                                    {% else %}
+                                        Register your first teacher to get started.
+                                    {% endif %}
+                                </p>
+
+                                {% if not search %}
+                                    <a class="primary-button"
+                                       href="{{ url_for('add_teacher') }}">
+                                        + Register First Teacher
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                Showing {{ teachers|length }} record(s)
+                {% if search %} for "{{ search }}"{% endif %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>

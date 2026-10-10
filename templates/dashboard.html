@@ -1,0 +1,385 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | SchoolCore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="sc-dashboard">
+
+    <aside class="sc-sidebar">
+
+        <a href="{{ url_for('dashboard') }}" class="sc-brand">
+            <span class="sc-brand-icon">S</span>
+            <span>
+                School<span class="sc-brand-light">Core</span>
+                <small>MANAGEMENT SYSTEM</small>
+            </span>
+        </a>
+
+        <div class="sc-menu-label">MAIN MENU</div>
+
+        <a href="{{ url_for('dashboard') }}" class="sc-nav-link active">
+            <span class="sc-nav-icon">▦</span> Dashboard
+        </a>
+
+        <a href="{{ url_for('students') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">♙</span> Students
+        </a>
+
+        <a href="{{ url_for('teachers') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▤</span> Teachers
+        </a>
+
+        <a href="{{ url_for('classes') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▧</span> Classes
+        </a>
+
+        <a href="{{ url_for('subjects') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▣</span> Subjects
+        </a>
+
+        <a href="{{ url_for('attendance') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">✓</span> Attendance
+        </a>
+
+        <a href="{{ url_for('attendance_reports') }}" class="sc-nav-link">
+            <span class="sc-nav-icon">▤</span> Attendance Reports
+        </a>
+
+        
+<a href="{{ url_for('school_fees') }}" class="sc-nav-link">
+    <span class="sc-nav-icon">💰</span>
+    <span>School Fees</span>
+</a>
+
+<a href="{{ url_for('fee_balances') }}" class="sc-nav-link">
+    <span class="sc-nav-icon">💳</span>
+    <span>Student Fee Balances</span>
+</a>
+    
+    <a href="{{ url_for('results') }}" class="sc-nav-link">
+        <span class="sc-nav-icon">▥</span> Results Entry
+    </a>
+
+    <a href="{{ url_for('results_reports') }}" class="sc-nav-link">
+        <span class="sc-nav-icon">▤</span> Results Reports
+    </a>
+
+
+<a href="{{ url_for('fee_payment_history') }}" class="sc-nav-link">
+    <span class="sc-nav-icon">💳</span>
+    <span>Student Fee Payment History</span>
+</a>
+
+
+<a href="{{ url_for('financial_dashboard') }}" class="sc-nav-link">
+    <span class="sc-nav-icon">📊</span> Financial Dashboard
+</a>
+
+
+<a href="{{ url_for('school_settings') }}" class="sc-nav-link">
+    <span class="sc-nav-icon">⚙</span> School Settings
+</a>
+
+<a href="{{ url_for('admin_account_settings') }}" class="sc-nav-link">
+    <span class="sc-nav-icon">👤</span> Account Settings
+</a>
+
+
+
+
+
+        <div class="sc-sidebar-bottom">
+
+            <div class="sc-help-card">
+                <div class="sc-help-icon">?</div>
+                <strong>Need assistance?</strong>
+                <p>School administration made simple.</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('logout') }}">
+                <button type="submit" class="sc-logout">
+                    <span>⇥</span> Sign out
+                </button>
+            </form>
+
+        </div>
+
+    </aside>
+
+    <main class="sc-main">
+
+        <header class="sc-topbar">
+            <div>
+                <div class="sc-breadcrumb">
+                    Workspace / <strong>Dashboard</strong>
+                </div>
+                <h1>Dashboard Overview</h1>
+            </div>
+
+            <div class="sc-admin">
+                <div class="sc-admin-avatar">A</div>
+                <div>
+                    <strong>Administrator</strong>
+                    <small>School Admin</small>
+                </div>
+            </div>
+        </header>
+
+        <section class="sc-welcome">
+            <div class="sc-welcome-content">
+                <span class="sc-eyebrow">SCHOOL ADMINISTRATION</span>
+                <h2>Welcome back, Administrator! 👋</h2>
+                <p>Here’s what is happening in your school today.</p>
+
+                <a href="{{ url_for('students') }}" class="sc-welcome-button">
+                    Manage students <span>→</span>
+                </a>
+            </div>
+
+            <div class="sc-welcome-art" aria-hidden="true">
+                <div class="sc-art-circle sc-art-circle-one"></div>
+                <div class="sc-art-circle sc-art-circle-two"></div>
+                <div class="sc-art-book">▤</div>
+                <div class="sc-art-star">✦</div>
+            </div>
+        </section>
+
+        <div class="sc-section-heading">
+            <div>
+                <h2>School at a glance</h2>
+                <p>A quick summary of your student records.</p>
+            </div>
+
+            <a href="{{ url_for('students') }}" class="sc-text-link">
+                View students →
+            </a>
+        </div>
+
+        <section class="sc-stats-grid">
+
+            <article class="sc-stat-card">
+                <div class="sc-stat-top">
+                    <span class="sc-stat-icon sc-icon-blue">♙</span>
+                    <span class="sc-stat-label">TOTAL STUDENTS</span>
+                </div>
+                <div class="sc-stat-number">{{ total_students }}</div>
+                <div class="sc-stat-foot">All registered students</div>
+                <div class="sc-stat-line sc-line-blue"></div>
+            </article>
+
+            <article class="sc-stat-card">
+                <div class="sc-stat-top">
+                    <span class="sc-stat-icon sc-icon-purple">♂</span>
+                    <span class="sc-stat-label">MALE STUDENTS</span>
+                </div>
+                <div class="sc-stat-number">{{ male_students }}</div>
+                <div class="sc-stat-foot">Registered boys</div>
+                <div class="sc-stat-line sc-line-purple"></div>
+            </article>
+
+            <article class="sc-stat-card">
+                <div class="sc-stat-top">
+                    <span class="sc-stat-icon sc-icon-orange">♀</span>
+                    <span class="sc-stat-label">FEMALE STUDENTS</span>
+                </div>
+                <div class="sc-stat-number">{{ female_students }}</div>
+                <div class="sc-stat-foot">Registered girls</div>
+                <div class="sc-stat-line sc-line-orange"></div>
+            </article>
+
+            <article class="sc-stat-card">
+                <div class="sc-stat-top">
+                    <span class="sc-stat-icon sc-icon-green">▤</span>
+                    <span class="sc-stat-label">CLASSES</span>
+                </div>
+                <div class="sc-stat-number">{{ total_classes }}</div>
+                <div class="sc-stat-foot">Classes with students</div>
+                <div class="sc-stat-line sc-line-green"></div>
+            </article>
+
+        </section>
+
+        <section class="sc-content-grid">
+
+            <div class="sc-panel sc-recent-panel">
+
+                <div class="sc-panel-heading">
+                    <div>
+                        <h2>Recently registered students</h2>
+                        <p>The latest student records in your system.</p>
+                    </div>
+
+                    <a href="{{ url_for('students') }}" class="sc-text-link">
+                        View all →
+                    </a>
+                </div>
+
+                {% if recent_students %}
+                <div class="sc-table-wrap">
+                    <table class="sc-table">
+                        <thead>
+                            <tr>
+                                <th>STUDENT</th>
+                                <th>STUDENT ID</th>
+                                <th>CLASS</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for student in recent_students %}
+                            <tr>
+                                <td>
+                                    <div class="sc-student-cell">
+                                        <span class="sc-student-avatar">
+                                            {{ student['first_name'][:1]|upper }}
+                                        </span>
+                                        <div>
+                                            <strong>
+                                                {{ student['first_name'] }}
+                                                {{ student['last_name'] }}
+                                            </strong>
+                                            <small>Student</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="sc-student-id">
+                                        {{ student['student_code'] }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="sc-class-pill">
+                                        {{ student['class_name'] or 'Not assigned' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% else %}
+                <div class="sc-empty-state">
+                    <div class="sc-empty-icon">♙</div>
+                    <h3>No students registered yet</h3>
+                    <p>Register your first student to see records here.</p>
+                    <a href="{{ url_for('students') }}" class="sc-primary-button">
+                        Open student records
+                    </a>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <div class="sc-panel sc-quick-panel">
+
+                <div class="sc-panel-heading">
+                    <div>
+                        <h2>Quick actions</h2>
+                        <p>Common tasks</p>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('students') }}" class="sc-action-link">
+                    <span class="sc-action-icon sc-icon-blue">♙</span>
+                    <span class="sc-action-copy">
+                        <strong>Student management</strong>
+                        <small>Search and manage records</small>
+                    </span>
+                    <span class="sc-action-arrow">→</span>
+                </a>
+
+                <a href="{{ url_for('add_student') }}" class="sc-action-link">
+                    <span class="sc-action-icon sc-icon-green">＋</span>
+                    <span class="sc-action-copy">
+                        <strong>Register a student</strong>
+                        <small>Add a new student record</small>
+                    </span>
+                    <span class="sc-action-arrow">→</span>
+                </a>
+
+                <a href="{{ url_for('add_teacher') }}" class="sc-action-link">
+                    <span class="sc-action-icon sc-icon-purple">＋</span>
+                    <span class="sc-action-copy">
+                        <strong>Register a teacher</strong>
+                        <small>Add a new teacher record</small>
+                    </span>
+                    <span class="sc-action-arrow">→</span>
+                </a>
+
+                <a href="{{ url_for('add_class') }}" class="sc-action-link">
+                    <span class="sc-action-icon sc-icon-orange">＋</span>
+                    <span class="sc-action-copy">
+                        <strong>Add a class</strong>
+                        <small>Register a school class</small>
+                    </span>
+                    <span class="sc-action-arrow">→</span>
+                </a>
+
+                <a href="{{ url_for('add_subject') }}" class="sc-action-link">
+                    <span class="sc-action-icon sc-icon-green">＋</span>
+                    <span class="sc-action-copy">
+                        <strong>Add a subject</strong>
+                        <small>Register a school subject</small>
+                    </span>
+                    <span class="sc-action-arrow">→</span>
+                </a>
+
+                <a href="{{ url_for('attendance') }}" class="sc-action-link">
+                    <span class="sc-action-icon sc-icon-blue">✓</span>
+                    <span class="sc-action-copy">
+                        <strong>Record attendance</strong>
+                        <small>Mark students present or absent</small>
+                    </span>
+                    <span class="sc-action-arrow">→</span>
+                </a>
+
+                
+            <a href="{{ url_for('results') }}" class="sc-action-link">
+                <span class="sc-action-icon sc-icon-green">▥</span>
+                <span class="sc-action-copy">
+                    <strong>Enter student results</strong>
+                    <small>Record class scores and examination marks</small>
+                </span>
+                <span class="sc-action-arrow">→</span>
+            </a>
+
+            <a href="{{ url_for('results_reports') }}" class="sc-action-link">
+                <span class="sc-action-icon sc-icon-purple">▤</span>
+                <span class="sc-action-copy">
+                    <strong>Results reports</strong>
+                    <small>View grades, averages and student performance</small>
+                </span>
+                <span class="sc-action-arrow">→</span>
+            </a>
+
+
+
+                <div class="sc-tip-card">
+                    <span>✦</span>
+                    <div>
+                        <strong>Helpful tip</strong>
+                        <p>Keep student names, class details and guardian contacts accurate and up to date.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <footer class="sc-footer">
+            <span>© SchoolCore Management System</span>
+            <span>Simple tools for better school administration</span>
+        </footer>
+
+    </main>
+
+</body>
+</html>

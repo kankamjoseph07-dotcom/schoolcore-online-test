@@ -1,0 +1,333 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Reports | SchoolCore</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .report-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 24px;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .report-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .filter-card,
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 22px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            align-items: end;
+        }
+
+        .filter-grid label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .filter-grid select,
+        .filter-grid input {
+            display: block;
+            width: 100%;
+            min-height: 44px;
+            padding: 11px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            box-sizing: border-box;
+            background: white;
+            color: #222;
+        }
+
+        .report-button {
+            display: inline-block;
+            min-height: 44px;
+            padding: 11px 18px;
+            border: none;
+            border-radius: 7px;
+            background: #2457d6;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+            box-sizing: border-box;
+        }
+
+        .report-button:hover {
+            background: #1945b2;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .summary-card p {
+            margin: 0 0 10px;
+            color: #666;
+        }
+
+        .summary-card h2 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .report-table-wrap {
+            overflow-x: auto;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .report-table th,
+        .report-table td {
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .report-table th {
+            background: #f5f7fb;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .Present {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .Absent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .Late {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .Excused {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .report-container {
+                padding: 12px;
+                margin: 15px auto;
+            }
+
+            .filter-card,
+            .report-card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-body">
+
+<div class="report-container">
+
+    <div class="report-header">
+        <div>
+            <h1>Attendance Reports</h1>
+            <p>Review student attendance records and daily totals.</p>
+        </div>
+
+        <a class="report-button" href="{{ url_for('attendance') }}">
+            Record Attendance
+        </a>
+    </div>
+
+    <!-- Attendance filters -->
+    <div class="filter-card">
+        <form method="GET" action="{{ url_for('attendance_reports') }}">
+
+            <div class="filter-grid">
+
+                <div>
+                    <label for="class_name">Select Class</label>
+
+                    <select id="class_name" name="class_name">
+                        <option value="">All Classes</option>
+
+                        {% for school_class in classes %}
+                        <option
+                            value="{{ school_class['class_name'] }}"
+                            {% if selected_class == school_class['class_name'] %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ school_class['class_name'] }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <div>
+                    <label for="attendance_date">
+                        Select Attendance Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="attendance_date"
+                        name="attendance_date"
+                        value="{{ attendance_date }}"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <button class="report-button" type="submit">
+                        View Report
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <!-- Attendance totals -->
+    <div class="summary-grid">
+
+        <div class="summary-card">
+            <p>Present</p>
+            <h2>{{ totals['Present'] }}</h2>
+        </div>
+
+        <div class="summary-card">
+            <p>Absent</p>
+            <h2>{{ totals['Absent'] }}</h2>
+        </div>
+
+        <div class="summary-card">
+            <p>Late</p>
+            <h2>{{ totals['Late'] }}</h2>
+        </div>
+
+        <div class="summary-card">
+            <p>Excused</p>
+            <h2>{{ totals['Excused'] }}</h2>
+        </div>
+
+    </div>
+
+    <!-- Attendance records -->
+    <div class="report-card">
+
+        <h2>Attendance Records</h2>
+
+        <p>
+            Date: <strong>{{ attendance_date }}</strong>
+
+            {% if selected_class %}
+                | Class: <strong>{{ selected_class }}</strong>
+            {% else %}
+                | Class: <strong>All Classes</strong>
+            {% endif %}
+        </p>
+
+        <div class="report-table-wrap">
+            <table class="report-table">
+
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Class</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record['student_code'] }}</td>
+
+                        <td>
+                            {{ record['first_name'] }}
+                            {{ record['last_name'] }}
+                        </td>
+
+                        <td>{{ record['class_name'] }}</td>
+
+                        <td>
+                            <span class="status {{ record['status'] }}">
+                                {{ record['status'] }}
+                            </span>
+                        </td>
+
+                        <td>{{ record['remarks'] or '—' }}</td>
+                    </tr>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-message">
+                            No attendance records found for this date and class.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
